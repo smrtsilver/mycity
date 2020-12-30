@@ -1,13 +1,17 @@
+import pyotp
 from django.contrib.auth import authenticate
 from rest_framework import status
-from rest_framework.authtoken.admin import User
+# from rest_framework.authtoken.admin import User
+from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated  # <-- Here
-
+import requests
 # new_token = Token.objects.create(user=request.user)
-from accounts.serializers import loginserializers
+from accounts.models import sms
+from accounts.serializers import *
+from accounts.utils import sendsmsmethod
 
 
 class anonymous(APIView):
@@ -19,35 +23,44 @@ class anonymous(APIView):
     def post(self, request):
         global user
         data = request.data
-        user = int(data.get("username"))
+        user = data.get("username")
         # TODO set validator for number
         if user:
+            user = int(user)
             try:
+                request.session['username'] = user
                 # TODO set validator for number
                 user = User.objects.get(username=user)
             except:
                 # age nabod
                 # request to sms panel
-                content = {"message": "user does not exist",
-                           "Invalid Input": False,
-                           "User Exist": False,
-                           "SMS Code": "6799"
-                           }
-                return Response(content, status=status.HTTP_404_NOT_FOUND)
+                out = sendsmsmethod(number=user)
+                if out["success"]:
+                    content = {"message": "کاربر وجود ندارد",
+                               "InvalidInput": False,
+                               "UserExist": False,
+                               "smscode": out["message"]
+                               }
+                    return Response(content, status=status.HTTP_200_OK)
+                else:
+                    content = {
+                        "message": out["message"]
+                    }
+                    return Response(content, status=status.HTTP_400_BAD_REQUEST)
             else:
                 # age bod
-                content = {"message": "user is exist",
-                           "Invalid Input": False,
-                           "User Exist": True,
+                content = {"message": "کاربر قبلا ثبت نام کرده است",
+                           "InvalidInput": False,
+                           "UserExist": True,
                            }
 
                 return Response(content, status=status.HTTP_200_OK)
         else:
             # age vorodi dorost nbod
             content = {
-                'message': "invalid input, please sent username",
-                "Invalid Input": True,
-                "User Exist": False,
+                'message': "ورودی صحیح نیست، لطفا نام کاربری را وارد کنید",
+                "InvalidInput": True,
+                "UserExist": False,
 
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
@@ -68,8 +81,10 @@ class login(APIView):
             password = serializer.data["password"]
         else:
             content = {
-                "message": serializer.errors,
-                "authenticate": False
+                "message": "ورودی ها صحیح نیست",
+                "authenticate": False,
+                "error": serializer.errors
+
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -86,7 +101,7 @@ class login(APIView):
             if user:
                 # login(request, user)
                 content = {
-                    "message": "login succesfull",
+                    "message": "ورود موفقیت آمیز بود",
                     "authenticate": True,
                     "Token": user.auth_token.key
 
@@ -94,13 +109,13 @@ class login(APIView):
                 return Response(content, status=status.HTTP_200_OK)
             else:
                 content = {
-                    "message": "incorrect password or username",
+                    "message": "نام کاربری یا رمز عبور اشتباه است",
                     "authenticate": False
                 }
                 return Response(content, status=status.HTTP_401_UNAUTHORIZED)
         except:
             content = {
-                "message": "unknown error"
+                "message": "ارور نامشخص"
             }
             return Response(content, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -114,12 +129,18 @@ class signup(APIView):
     #     return Response(content)
 
     def post(self, request):
-        serializer = loginserializers(data=request.data)
+        serializer = signupserializers(data=request.data)
         if serializer.is_valid():
             username = serializer.data["username"]
             password = serializer.data["password"]
+            city = serializer.data["city"]
+
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            content = {
+                "message": "ورودی ها صحیح نیست",
+                "error": serializer.errors
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
         try:
             # data = request.data
             # username = data.get("username")
@@ -137,14 +158,207 @@ class signup(APIView):
         except:
             user = User.objects.create_user(username=username, password=password)
             content = {
-                "message": "register success",
+                "message": "ثبت نام با موفقیت انجام شد",
                 "user_created": True,
                 "Token": user.auth_token.key
             }
             return Response(content, status=status.HTTP_201_CREATED)
         else:
             content = {
-                "message": "user is exist, please login"
+                "message": "کاربر قبلا ثیت نام کرده است، لطفا وارد شوید"
 
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class smsvalidation(APIView):
+#
+#
+#     # def get(self,request):
+#     #     content = {
+#     #         "smsCode": smscode
+#     #     }
+#     #     return Response(content, status=status.HTTP_200_OK)
+#
+#     def post(self,request):
+#
+#         ser = smsserializers(data=request.data)
+#         if ser.is_valid():
+#             sendsms=ser.data["sendsms"]
+#             user=ser.data["username"]
+#             if sendsms:
+#                 #todo send sms
+#                 smscode = 6799
+#                 content={
+#                     'message' : " پیامک ارسال شد"
+#                 }
+#                 return Response(content,status=status.HTTP_200_OK)
+#             else:
+#                 sms=ser.data["smscode"]
+#
+#
+#         sms = data.get("smscode")
+#         if sms:
+#             sms=int(sms)
+#             if sms == smscode:
+#                 content = {
+#                     "message": "مورد قبول است",
+#                     "authorizea": True
+#
+#                 }
+#                 return Response(content, status=status.HTTP_200_OK)
+#             else:
+#                 content = {
+#                     "message": "کد پیامکی اشتباه وارد شده است",
+#                     "authorize" : False
+#
+#                 }
+#                 return Response(content, status=status.HTTP_403_FORBIDDEN)
+#         else:
+#             content={
+#                 "message": "لطفا کد را وارد کنید",
+#                 "authorize" : False
+#             }
+#         return Response(content,status=status.HTTP_400_BAD_REQUEST)
+
+class forgotpass(APIView):
+
+    def post(self, request):
+        
+        # data=request.data
+        # username=data.get("username")
+        # password=data.get("password")
+        #
+        # if not username:
+        #     username = request.session['username']
+
+
+        serializer = loginserializers(data=request.data)
+        if serializer.is_valid():
+            username = serializer.data["username"]
+            password = serializer.data["password"]
+            try:
+                user = User.objects.get(username=username)
+                user.set_password(password)
+                user.save()
+            except Exception as e:
+                content={
+                    "message" : "بروز خطا",
+                    "errorcontent" : e
+                }
+                return Response(content,status=status.HTTP_400_BAD_REQUEST)
+            else:
+                content={
+                    "message" : "پسورد با موفقیت تغییر پیدا کرد",
+                    "success" : True
+                }
+                return Response(content,status=status.HTTP_200_OK)
+        else:
+            content={
+                "message" : "ورودی ها معتبر نیستند",
+                "errorcontent" : serializer.errors
+            }
+            return Response(content,status=status.HTTP_400_BAD_REQUEST)
+        
+            
+
+    # else:
+    #         content = {
+    #             'message': "ورودی صحیح نیست، لطفا نام کاربری را وارد کنید",
+    #             "InvalidInput": True,
+    #
+    #         }
+    #         return Response(content,status=status.HTTP_400_BAD_REQUEST)
+
+
+class sendsms(APIView):
+
+    def post(self, request, format=None):
+        # @permission_classes([permissions.IsAuthenticated])
+        # def send_sms_code(request, format=None):
+        # Time based otp
+        data = request.data
+        data=data.get("username")
+        if data:
+            data=int(data)
+            out = sendsmsmethod(number=data)
+            if out["success"]:
+                content = {
+                    "smscode": out["message"]
+                }
+                return Response(content, status=status.HTTP_200_OK)
+            else:
+                content = {
+                    "smscode": out["success"]
+                }
+                return Response(content, status=200)
+
+            # try:
+            #
+            #     # user = User.objects.get(username=data)
+            #     a = sms.objects.update_or_create(phonenumber=data)
+            #     time_otp = pyotp.TOTP(a[0].key, interval=500)
+            #     time_otp = time_otp.now()
+            #     # Phone number must be international and start with a plus '+'
+            #     # user_phone_number = request.user.phonenumber.number
+            #     # client.messages.create(
+            #     #     body="Your verification code is " + time_otp,
+            #     #     from_=twilio_phone,
+            #     #     to=user_phone_number
+            #     # )
+            #
+            # except Exception as e:
+            #     content = {
+            #         "message": e
+            #     }
+            #     return Response(content)
+
+        else:
+            contet = {
+                "message": "ورودی صجیج نیست"
+            }
+            return Response(contet)
+
+
+class smsvalidation(APIView):
+
+    # @permission_classes([permissions.IsAuthenticated])
+    def post(self, request, format=None):
+        data = request.data
+
+        user = request.session['username']
+        if not user:
+            user = data.get("username")
+
+        smscode = data.get("smscode")
+        if user and smscode:
+            try:
+                assert int(user), "ورودی صحیح نیست"
+                assert int(smscode), "ورودی صحیح نیست"
+            except Exception as e:
+                content = {
+                    "message": e
+                }
+                return Response(content, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user = int(user)
+                smscode = int(smscode)
+
+        # user = User.objects.get(username=user)
+        number = sms.objects.get_or_create(phonenumber=user)
+        if number[0].authenticate(smscode):
+            # phone = number
+            # phone.verified = True
+            # phone.save()
+            content = {
+                "authenticate": True
+            }
+
+            return Response(content,status=201)
+        else:
+            content = {
+                "message":"کد وارد شده نادرست است یا منقضی شده است",
+                "authenticate": False
+            }
+
+            return Response(content, status=200)
