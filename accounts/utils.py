@@ -6,10 +6,15 @@ from accounts.models import sms
 def sendsmsmethod(number, format=None):
 
         try:
+            print(number)
+
             data = int(number)
-            a = sms.objects.update_or_create(phonenumber=data)
-            time_otp = pyotp.TOTP(a[0].key, interval=60)
+            a = sms.objects.get_or_create(phonenumber=data)
+            print(a,a[0].key)
+            time_otp = pyotp.TOTP(a[0].key, interval=120)
+            print(time_otp)
             time_otp = time_otp.now()
+            print(time_otp)
 
         except Exception as e:
             content = {

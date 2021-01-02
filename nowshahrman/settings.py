@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'rest_framework',
     'rest_framework.authtoken',
-    "content.apps.ContentConfig"
+    # "content.apps.ContentConfig",
 
 
 ]

@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated  # <-- Here
-import requests
+# import requests
 # new_token = Token.objects.create(user=request.user)
 from accounts.models import sms
 from accounts.serializers import *
@@ -26,9 +26,11 @@ class anonymous(APIView):
         user = data.get("username")
         # TODO set validator for number
         if user:
+
+            request.session['username'] = user
             user = int(user)
             try:
-                request.session['username'] = user
+
                 # TODO set validator for number
                 user = User.objects.get(username=user)
             except:
@@ -224,14 +226,13 @@ class signup(APIView):
 class forgotpass(APIView):
 
     def post(self, request):
-        
+
         # data=request.data
         # username=data.get("username")
         # password=data.get("password")
         #
         # if not username:
         #     username = request.session['username']
-
 
         serializer = loginserializers(data=request.data)
         if serializer.is_valid():
@@ -242,25 +243,23 @@ class forgotpass(APIView):
                 user.set_password(password)
                 user.save()
             except Exception as e:
-                content={
-                    "message" : "بروز خطا",
-                    "errorcontent" : e
+                content = {
+                    "message": "بروز خطا",
+                    "errorcontent": e
                 }
-                return Response(content,status=status.HTTP_400_BAD_REQUEST)
+                return Response(content, status=status.HTTP_400_BAD_REQUEST)
             else:
-                content={
-                    "message" : "پسورد با موفقیت تغییر پیدا کرد",
-                    "success" : True
+                content = {
+                    "message": "پسورد با موفقیت تغییر پیدا کرد",
+                    "success": True
                 }
-                return Response(content,status=status.HTTP_200_OK)
+                return Response(content, status=status.HTTP_200_OK)
         else:
-            content={
-                "message" : "ورودی ها معتبر نیستند",
-                "errorcontent" : serializer.errors
+            content = {
+                "message": "ورودی ها معتبر نیستند",
+                "errorcontent": serializer.errors
             }
-            return Response(content,status=status.HTTP_400_BAD_REQUEST)
-        
-            
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     # else:
     #         content = {
@@ -278,9 +277,11 @@ class sendsms(APIView):
         # def send_sms_code(request, format=None):
         # Time based otp
         data = request.data
-        data=data.get("username")
+        data = data.get("username")
+
+        request.session['username'] = data
         if data:
-            data=int(data)
+            data = int(data)
             out = sendsmsmethod(number=data)
             if out["success"]:
                 content = {
@@ -325,11 +326,32 @@ class smsvalidation(APIView):
     # @permission_classes([permissions.IsAuthenticated])
     def post(self, request, format=None):
         data = request.data
+        user = data.get("username")
+        print(user)
+        print(request.headers)
+        # Store language back into session if it is not present
+        print(hasattr(request, 'session'))
+       
+        if user==None:
+            if hasattr(request, 'session'):
+                # request.session.setdefault('django_language', language)
+                user = request.session['username']
+                print(request.session['username'])
+            else:
+                content={
+                    "message" : "سشن وجود ندارد لطفا پارامتر username را وارد کنید"
+                }
+                return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-        user = request.session['username']
-        if not user:
-            user = data.get("username")
+        # else:
+        #     content = {
+        #         "message": " لطفا پارامتر username را وارد کنید"
+        #     }
+        #     return Response(content, status=status.HTTP_400_BAD_REQUEST)
+        #
+            # print(request.session['username'])
 
+        print(user)
         smscode = data.get("smscode")
         if user and smscode:
             try:
@@ -346,6 +368,7 @@ class smsvalidation(APIView):
 
         # user = User.objects.get(username=user)
         number = sms.objects.get_or_create(phonenumber=user)
+
         if number[0].authenticate(smscode):
             # phone = number
             # phone.verified = True
@@ -354,10 +377,10 @@ class smsvalidation(APIView):
                 "authenticate": True
             }
 
-            return Response(content,status=201)
+            return Response(content, status=201)
         else:
             content = {
-                "message":"کد وارد شده نادرست است یا منقضی شده است",
+                "message": "کد وارد شده نادرست است یا منقضی شده است",
                 "authenticate": False
             }
 

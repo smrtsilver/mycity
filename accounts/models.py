@@ -36,5 +36,5 @@ class sms(models.Model):
             return False
         # Here we are using Time Based OTP. The interval is 300 seconds.
         # otp must be provided within this interval or it's invalid
-        t = pyotp.TOTP(self.key, interval=500)
+        t = pyotp.TOTP(self.key, interval=120)
         return t.verify(provided_otp)
