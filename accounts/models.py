@@ -17,14 +17,23 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 class profile(models.Model):
-    phonenumber = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     city = models.CharField(max_length=30)
+
+    @receiver(post_save, sender=User)
+    def create_or_update_user_profile(sender, instance, created, **kwargs):
+        if created:
+            profile.objects.create(user=instance)
+        instance.profile.save()
+
+    def __str__(self):
+        return self.user.username
 
 
 class sms(models.Model):
     # methods
     phonenumber = models.CharField(max_length=15)
-    key = models.CharField(max_length=100, unique=True,blank=True)
+    key = models.CharField(max_length=100, unique=True, blank=True)
     verified = models.BooleanField(default=False, blank=True, null=True)
 
     def authenticate(self, otp):
@@ -38,3 +47,6 @@ class sms(models.Model):
         # otp must be provided within this interval or it's invalid
         t = pyotp.TOTP(self.key, interval=120)
         return t.verify(provided_otp)
+
+    def __str__(self):
+        return self.phonenumber

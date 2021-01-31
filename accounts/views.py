@@ -114,7 +114,7 @@ class login(APIView):
                     "message": "نام کاربری یا رمز عبور اشتباه است",
                     "authenticate": False
                 }
-                return Response(content, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(content, status=status.HTTP_200_OK)
         except:
             content = {
                 "message": "ارور نامشخص"
