@@ -9,6 +9,7 @@ urlpatterns = [
 
     path("tariff/",views.get_tariff.as_view()),
     path("getcategory/",views.get_group.as_view()),
+    path("getcontent/",views.get_content.as_view())
 
 
 ]

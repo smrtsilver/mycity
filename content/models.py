@@ -2,20 +2,11 @@ from django.contrib.auth.models import User
 from django.db import models
 from accounts.models import profile
 
-
 # from content.utils import foreingkeylimit
+# from content.utils import find_by_key
 
 
-# def foreingkeylimit():
-#     obj = content.objects.all()
-#     # for o in obj:
-#     #     if o.num == 1:
-#     #         return group.objects.get(id == 3)
-#     #     elif o.num == 2:
-#     #         return group.objects.get(id==4)
-#     #     else:
-#     return group.objects.get(id==3)
-
+#
 
 def get_upload_path(instance, filename):
     # model = instance.content.__class__._meta
@@ -56,9 +47,10 @@ class Image(models.Model):
 
 #
 class content(models.Model):
+
+
     author = models.ForeignKey(profile, on_delete=models.CASCADE)
-    group = models.ForeignKey("group", on_delete=models.PROTECT,
-                              )
+    group = models.ForeignKey("group", on_delete=models.PROTECT)
     title = models.CharField(max_length=20)
     # album = models.OneToOneField(ImageAlbum, related_name='model', on_delete=models.CASCADE)
     # image = models.ImageField()
@@ -73,9 +65,7 @@ class content(models.Model):
         return self.title
 
 
-
 class city_prob(content):
-
     district = models.CharField(max_length=20)
 
     # group = models.ForeignKey("group", on_delete=models.CASCADE, limit_choices_to={"category_title":"مشکلات شهری"})
@@ -83,18 +73,13 @@ class city_prob(content):
         pass
 
 
-
-
 class employment(content):
-
     salary = models.IntegerField()
     address = models.CharField(max_length=100)
 
 
-
-
 class group(models.Model):
-    category_title = models.CharField(max_length=50, blank=False, null=False)
+    category_title = models.CharField(max_length=50,unique=True, blank=False, null=False)
     id = models.AutoField(primary_key=True)
     image = models.ImageField(upload_to="category_images")
 

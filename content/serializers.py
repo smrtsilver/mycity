@@ -23,13 +23,24 @@ class tariffserializers(serializers.ModelSerializer):
         depth = 1
 
 
-class getcontentserializers(serializers.Serializer):
-    group_id = serializers.IntegerField()
+class getcontentserializers(serializers.ModelSerializer):
+    class Meta:
+        model = content
+        fields = "__all__"
+
+    # group_id = serializers.IntegerField()
     #   TODO sth
     def query(self):
-        pass# self.group_id
-class cityprobserializers(serializers.ModelSerializer):
+        pass  # self.group_id
 
+
+class cityprobserializers(serializers.ModelSerializer):
     class Meta:
         model = city_prob
-        fields= "__all__"
+        fields = "__all__"
+
+
+class employmentserializers(serializers.ModelSerializer):
+    class Meta:
+        model = employment
+        fields = "__all__"
