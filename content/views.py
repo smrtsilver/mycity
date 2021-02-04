@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from rest_framework.views import APIView
 import pyotp
 from django.contrib.auth import authenticate
@@ -37,9 +38,9 @@ class createcontent(APIView):
     def post(self, request):
         data = request.data
         if "group" in data.keys():
-            group_id=data["group"]
+            group_id = data["group"]
         else:
-            group_id=None
+            group_id = None
         # try:
         #     group.objects.get(id__exact=group_id)
         # except:
@@ -47,19 +48,19 @@ class createcontent(APIView):
         #        "message":"شناسه دسته بندی اشتباه است"
         #    }
         #    return Response(content,status=status.HTTP_200_OK)
-        if group_id=="1":
-            ser=employmentserializers(data=data)
+        if group_id == "1":
+            ser = employmentserializers(data=data)
             if ser.is_valid():
                 ser.save()
-                content={
-                    "message":"با موفقیت ایجاد شد",
-                    "created":True
+                content = {
+                    "message": "با موفقیت ایجاد شد",
+                    "created": True
                 }
-                return Response(content,status=status.HTTP_200_OK)
+                return Response(content, status=status.HTTP_200_OK)
             else:
-                return Response(ser.errors,status=status.HTTP_200_OK)
-        elif group_id==3:
-            ser=cityprobserializers(data=data)
+                return Response(ser.errors, status=status.HTTP_200_OK)
+        elif group_id == 3:
+            ser = cityprobserializers(data=data)
             if ser.is_valid():
                 ser.save()
                 content = {
@@ -82,26 +83,53 @@ class createcontent(APIView):
 
                 return Response(ser.errors, status=status.HTTP_201_CREATED)
 
+
 class get_tariff(APIView):
     def post(self, request):
         ser = tariffserializers(tariff.objects.all(), many=True)
         return Response(ser.data, status=status.HTTP_200_OK)
+
 
 class get_group(APIView):
     def post(self, request):
         ser = groupserializers(group.objects.all(), many=True)
         return Response(ser.data, status=status.HTTP_200_OK)
 
+
+# class get_subgroup(APIView):
+#     def post(self, request):
+#         data = request.data
+#         if "group" in data.keys():
+#             group_id = data["group"]
+#
+#             query = sub_group.objects.filter(category_connect__id=group_id)
+#             ser = subgrouoserializers(query, many=True)
+#
+#             return Response(ser.data, status=status.HTTP_200_OK)
+#         else:
+#             data = {"group": "این فیلد لازم است"}
+#             return Response(data, status=status.HTTP_200_OK)
+
+
 class get_content(APIView):
     def post(self, request):
         data = request.data
-        id = data["id"]
-        query = content.objects.filter(group_id=id).filter(valid__exact=True).order_by("create_time")
-        ser = getcontentserializers(query, many=True)
+        if "group" in data.keys():
+            group_id = data["group"]
 
-        return Response(ser.data, status=status.HTTP_200_OK)
+            query = content.objects.filter(group_id=group_id).filter(valid__exact=True).order_by("create_time")
+            ser = getcontentserializers(query, many=True)
+
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            data = {"group": "این فیلد لازم است"}
+            return Response(data, status=status.HTTP_200_OK)
+
         # else:
         #     return Response(ser.errors,status=status.HTTP_200_OK)
         #
 
 
+@login_required
+class comment_remove(APIView):
+    pass
