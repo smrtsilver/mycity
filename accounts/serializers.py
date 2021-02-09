@@ -1,4 +1,7 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
+
+from accounts.models import profile
 
 
 class loginserializers(serializers.Serializer):
@@ -22,7 +25,25 @@ class smsserializers(serializers.Serializer):
 
 class userserializer(serializers.ModelSerializer):
     class Meta:
-        pass
+        model=User
+        fields="__all__"
+class profileserializer(serializers.ModelSerializer):
+    fullname = serializers.SerializerMethodField("get_fullname")
+    def get_fullname(self, obj):
+        if obj.user.get_full_name() == "":
+            name="بی نام"
+            return name
+        else:
+            return obj.user.get_full_name()
+    # fullname=serializers.CharField(source=get_artists_name)
+    # firstname=serializers.CharField(source="user.first_name",default="بی نام")
+
+    class Meta:
+        model=profile
+        fields=("profile_image","fullname")
+
+
+
 
 
 def PhoneNumberSerializer():

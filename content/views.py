@@ -92,8 +92,14 @@ class get_tariff(APIView):
 
 class get_group(APIView):
     def post(self, request):
-        ser = groupserializers(group.objects.all(), many=True)
-        return Response(ser.data, status=status.HTTP_200_OK)
+
+        if (request.data.get("group") is None) or int(request.data["group"])==0:
+            ser = groupserializers(group.objects.filter(parent=None), many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            group_id = request.data.get("group")
+            ser = groupserializers(group.objects.filter(parent__id=group_id), many=True)
+            return Response(ser.data, status=status.HTTP_200_OK)
 
 
 # class get_subgroup(APIView):
@@ -114,12 +120,11 @@ class get_group(APIView):
 class get_content(APIView):
     def post(self, request):
         data = request.data
-        if "group" in data.keys():
+        if "group" in data.keys() and data.get("group") != "":
             group_id = data["group"]
 
-            query = content.objects.filter(group_id=group_id).filter(valid__exact=True).order_by("create_time")
-            ser = getcontentserializers(query, many=True)
-
+            query = content.objects.filter(group_id=group_id).order_by("create_time")
+            ser = contentserializers(query, many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
             data = {"group": "این فیلد لازم است"}
