@@ -9,38 +9,57 @@ class ImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = ("image",)
 
+
 class topcontentserializers(serializers.ModelSerializer):
-    image = ImageSerializer(many=True, source="album.get_images")
+    image=serializers.SerializerMethodField()
+    # image = ImageSerializer(many=True, source="album.get_images")
+    number_of_likes = serializers.ReadOnlyField()
     class Meta:
-        model = content
-        fields = ("title",)
+        model = base_content
+        fields = ("id","title", "image", "number_of_likes")
+    def get_image(self, obj):
+        results = obj.get_main_pic()
+        ser = ImageSerializer(results, many=True)
+        return ser.data
+
+
 class contentserializers(serializers.ModelSerializer):
     # author = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
     # profile= serializers.ReadOnlyField(source='profile.field_in_profile')
     # author=profileserializer()
     # author = serializers.ReadOnlyField(source='author.user.fullname',default="بی نام")
+
     profileimage = profileserializer(source="author", read_only=True)
     image = ImageSerializer(many=True, source="album.get_images")
     fulltime = serializers.ReadOnlyField()
     number_of_comments = serializers.ReadOnlyField()
     number_of_likes = serializers.ReadOnlyField()
-    content.objects.all()
+    base_content.objects.all()
+
     class Meta:
-        model = content
+        model = base_content
         exclude = ('valid', 'create_time', 'update_time',)
         # read_only_fields = ()
 
-    def to_representation(self, instance):
-        ret = super(contentserializers, self).to_representation(instance)
-        profile=ret.pop("profileimage")
-        ret.update({"profileiamge":profile["profile_image"]})
-        ret.update({"user" : profile["fullname"]})
+    # def get_topN(self, obj):
+    #     results = sorted(content.objects.all(), key=lambda m: m.number_of_likes,reverse=True)[:2]
+    #     ser = topcontentserializers(results, many=True)
+    #     return ser.data
 
+    def to_representation(self, instance):
+        # Result = dict()
+        ret = super(contentserializers, self).to_representation(instance)
+        profile = ret.pop("profileimage")
+        ret.update({"profileiamge": profile["profile_image"]})
+        ret.update({"user": profile["fullname"]})
+        # TOP=ret.pop("topN")
         #
         # representation = {
         #     'image': self.profileimage.data
         #                  }
 
+        # Result["result"] = ret
+        # Result.update({"TOP": TOP})
         return ret
 
         # todo use this to check if name is None or not

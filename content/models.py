@@ -1,6 +1,9 @@
 import jdatetime
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+
 from accounts.models import profile
 from django_jalali.db import models as jmodels
 
@@ -29,32 +32,35 @@ def get_upload_path(instance, filename):
 #     slug = slugify(title)
 #     return "post_images/%s-%s" % (slug, filename)
 
-class ImageAlbum(models.Model):
-    # class Meta:
-    #     verbose_name="آلبوم"
-    #     verbose_name_plural="آلبوم ها"
-    # albumname = models.CharField(max_length=30, default=get_album_name, editable=False)
-    def get_images(self):
-        image = self.imagesA.all()
-        return image
-
-    def default(self):
-        return self.imagesA.filter(default=True).first()
-
-    def thumbnails(self):
-        return self.imagesA.filter(width__lt=100, length_lt=100)
-
-    def __str__(self):
-        return str(self.id)
-
-
-#
 
 class Image(models.Model):
-    image = models.ImageField(upload_to="a")
+    image = models.ImageField(upload_to="a", default="no-image.png")
     album = models.ForeignKey("ImageAlbum", related_name="imagesA", on_delete=models.CASCADE)
-    mainpic=models.BooleanField(default=False)
+    mainpic = models.BooleanField(default=False)
 
+    def __str__(self):
+        return str(self.album.id)
+
+    def save(self, *args, **kwargs):
+        if self.mainpic:
+            try:
+                temp = Image.objects.get(mainpic=True)
+                if self != temp:
+                    temp.mainpic = False
+                    temp.save()
+            except Image.DoesNotExist:
+                pass
+        else:
+
+            try:
+                temp = Image.objects.get(mainpic=True)
+
+            except:
+
+                self.mainpic = True
+                self.save()
+
+        super(Image, self).save(*args, **kwargs)
     # content_connect = models.ForeignKey("content", related_name='images', on_delete=models.CASCADE)
     # name = models.CharField(max_length=255)
     # default = models.BooleanField(default=False)
@@ -62,7 +68,7 @@ class Image(models.Model):
     # length = models.FloatField(default=100)
 
 
-class content(models.Model):
+class base_content(models.Model):
     author = models.ForeignKey(profile, on_delete=models.CASCADE)
     group = models.ForeignKey("group", on_delete=models.PROTECT)
     title = models.CharField(max_length=20)
@@ -71,7 +77,7 @@ class content(models.Model):
     update_time = jmodels.jDateTimeField(auto_now=True)
     city = models.CharField(max_length=20)
     valid = models.BooleanField(default=False)
-    album = models.OneToOneField(ImageAlbum, related_name='modelAlbum', on_delete=models.CASCADE, blank=True)
+
 
     # create_time = models.DateTimeField(auto_now=True)
     # image = models.Imag()eField
@@ -86,6 +92,8 @@ class content(models.Model):
         return self.comments.filter(approved_comment=True)
 
     # todo share post
+    def get_main_pic(self):
+        return self.album.get_main_image()
 
     def get_date(self):
         year = self.create_time.date().year
@@ -101,8 +109,8 @@ class content(models.Model):
 
     @property
     def fulltime(self):
-        date=self.get_date()
-        time=self.get_time()
+        date = self.get_date()
+        time = self.get_time()
         return f"{date} {time}"
 
     # def get_absolute_url(self):
@@ -128,12 +136,46 @@ class content(models.Model):
     #         img.save(self.image.path)
 
 
+class ImageAlbum(models.Model):
+    album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.DO_NOTHING, null=True,
+                                 editable=False)
+    # class Meta:
+    #     verbose_name="آلبوم"
+    #     verbose_name_plural="آلبوم ها"
+    # albumname = models.CharField(max_length=30, default=get_album_name, editable=False)
+    def get_images(self):
+        image = self.imagesA.all()
+        return image
+
+    def get_main_image(self):
+        return self.imagesA.filter(mainpic=True)
+
+    def default(self):
+        return self.imagesA.filter(default=True).first()
+
+    def thumbnails(self):
+        return self.imagesA.filter(width__lt=100, length_lt=100)
+
+    def __str__(self):
+        return str(self.id)
+
+    @receiver(post_save, sender=base_content)
+    def create_or_update_album(sender, instance, created, **kwargs):
+        if created:
+           ImageAlbum.objects.create(album=instance)
+
+        # instance.ImageAlbum.save()
+
+
+
+
+#
 class Comment(models.Model):
     class Meta:
         ordering = ['create_time']
 
     blogpost_connected = models.ForeignKey(
-        content, related_name='comments', on_delete=models.CASCADE)
+        base_content, related_name='comments', on_delete=models.CASCADE)
     author = models.ForeignKey(profile, on_delete=models.CASCADE)
     # todo set default for on_delete
     text = models.TextField()
@@ -150,7 +192,7 @@ class Comment(models.Model):
 
 
 class like(models.Model):
-    content_connect = models.ForeignKey(content, related_name="likes", on_delete=models.CASCADE)
+    content_connect = models.ForeignKey(base_content, related_name="likes", on_delete=models.CASCADE)
     user_connect = models.ForeignKey(profile, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -160,7 +202,7 @@ class like(models.Model):
         pass
 
 
-class city_prob(content):
+class city_prob(base_content):
     district = models.CharField(max_length=20)
 
     # group = models.ForeignKey("group", on_delete=models.CASCADE, limit_choices_to={"category_title":"مشکلات شهری"})
@@ -168,7 +210,15 @@ class city_prob(content):
         pass
 
 
-class employment(content):
+class news(models.Model):
+    pass
+
+
+class realstate(models.Model):
+    pass
+
+
+class employment(base_content):
     salary = models.IntegerField()
     address = models.CharField(max_length=100)
 

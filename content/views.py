@@ -93,7 +93,7 @@ class get_tariff(APIView):
 class get_group(APIView):
     def post(self, request):
 
-        if (request.data.get("group") is None) or int(request.data["group"])==0:
+        if (request.data.get("group") is None) or int(request.data["group"]) == 0:
             ser = groupserializers(group.objects.filter(parent=None), many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
@@ -120,19 +120,35 @@ class get_group(APIView):
 class get_content(APIView):
     def post(self, request):
         data = request.data
-        if "group" in data.keys() and data.get("group") != "":
+        if all(x in data.keys() for x in ['group', 'skip']) and (data.get("group") != "") and (data.get("skip") != ""):
+            step = 10
+            skip = int(data["skip"])
             group_id = data["group"]
-
-            query = content.objects.filter(group_id=group_id).order_by("create_time")
+            query = base_content.objects.filter(group_id=group_id).order_by("create_time")[skip:skip + step]
             ser = contentserializers(query, many=True)
+
+            # dic={
+            #     "result" : ser.data,
+            #     "top": top.data
+            # }
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
-            data = {"group": "این فیلد لازم است"}
+            data = {"group": "این فیلد لازم است",
+                    "skip": "این فیلد لازم است"}
             return Response(data, status=status.HTTP_200_OK)
 
         # else:
         #     return Response(ser.errors,status=status.HTTP_200_OK)
         #
+
+
+class get_slider(APIView):
+    def post(self, request):
+        #todo id group
+        top = 3
+        results = sorted(base_content.objects.all(), key=lambda m: m.number_of_likes, reverse=True)[:top]
+        toplist = topcontentserializers(results, many=True)
+        return Response(toplist.data, status=status.HTTP_200_OK)
 
 
 @login_required
