@@ -136,38 +136,6 @@ class base_content(models.Model):
     #         img.save(self.image.path)
 
 
-class ImageAlbum(models.Model):
-    album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.DO_NOTHING, null=True,
-                                 editable=False)
-    # class Meta:
-    #     verbose_name="آلبوم"
-    #     verbose_name_plural="آلبوم ها"
-    # albumname = models.CharField(max_length=30, default=get_album_name, editable=False)
-    def get_images(self):
-        image = self.imagesA.all()
-        return image
-
-    def get_main_image(self):
-        return self.imagesA.filter(mainpic=True)
-
-    def default(self):
-        return self.imagesA.filter(default=True).first()
-
-    def thumbnails(self):
-        return self.imagesA.filter(width__lt=100, length_lt=100)
-
-    def __str__(self):
-        return str(self.id)
-
-    @receiver(post_save, sender=base_content)
-    def create_or_update_album(sender, instance, created, **kwargs):
-        if created:
-           ImageAlbum.objects.create(album=instance)
-
-        # instance.ImageAlbum.save()
-
-
-
 
 #
 class Comment(models.Model):
@@ -290,3 +258,38 @@ class tariff(models.Model):
 #     name = models.CharField(max_length=255)
 #     author = models.CharField(max_length=255)
 #     album = models.OneToOneField(ImageAlbum, related_name='model', on_delete=models.CASCADE)
+class ImageAlbum(models.Model):
+    album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.DO_NOTHING, null=True,
+                                 editable=False)
+    # class Meta:
+    #     verbose_name="آلبوم"
+    #     verbose_name_plural="آلبوم ها"
+    # albumname = models.CharField(max_length=30, default=get_album_name, editable=False)
+    def get_images(self):
+        image = self.imagesA.all()
+        return image
+
+    def get_main_image(self):
+        return self.imagesA.filter(mainpic=True)
+
+    def default(self):
+        return self.imagesA.filter(default=True).first()
+
+    def thumbnails(self):
+        return self.imagesA.filter(width__lt=100, length_lt=100)
+
+    def __str__(self):
+        return str(self.id)
+
+    @receiver(post_save, sender=city_prob)
+    @receiver(post_save, sender=employment)
+    @receiver(post_save, sender=news)
+    @receiver(post_save, sender=base_content)
+    def create_or_update_album(sender, instance, created, **kwargs):
+        if created:
+           ImageAlbum.objects.create(album=instance)
+
+        # instance.ImageAlbum.save()
+
+
+
