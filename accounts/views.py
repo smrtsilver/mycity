@@ -1,5 +1,5 @@
 import pyotp
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from rest_framework import status
 # from rest_framework.authtoken.admin import User
 from django.contrib.auth.models import User
@@ -14,25 +14,23 @@ from accounts.serializers import *
 from accounts.utils import sendsmsmethod
 
 
+# permission_classes = (IsAuthenticated,)
 class anonymous(APIView):
     # permission_classes = (IsAuthenticated,)
     # def get(self, request):
     #     content = {'message': 'use '}
     #     return Response(content)
-
     def post(self, request):
         global user
-        data = request.data
-        user = data.get("username")
         # TODO set validator for number
-        if user:
+        ser = PhoneNumberSerializer(data=request.data)
+        if ser.is_valid():
 
-            request.session['username'] = user
-            user = int(user)
+            # request.session['username'] = user
+            # user = int(user)
             try:
-
-                # TODO set validator for number
-                user = User.objects.get(username=user)
+                user = request.data.get("username")
+                usernumber = User.objects.get(username=user)
             except:
                 # age nabod
                 # request to sms panel
@@ -60,15 +58,15 @@ class anonymous(APIView):
         else:
             # age vorodi dorost nbod
             content = {
-                'message': "ورودی صحیح نیست، لطفا نام کاربری را وارد کنید",
+                'message': ser.errors,
                 "InvalidInput": True,
                 "UserExist": False,
 
             }
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+            return Response(content, status=status.HTTP_200_OK)
 
 
-class login(APIView):
+class login_user(APIView):
     # permission_classes = (IsAuthenticated,)
     # def get(self, request):
     #     content = {
@@ -108,6 +106,7 @@ class login(APIView):
                     "Token": user.auth_token.key
 
                 }
+                login(request, user)
                 return Response(content, status=status.HTTP_200_OK)
             else:
                 content = {
@@ -131,11 +130,10 @@ class signup(APIView):
     #     return Response(content)
 
     def post(self, request):
-        serializer = signupserializers(data=request.data)
+        serializer = loginserializers(data=request.data)
         if serializer.is_valid():
             username = serializer.data["username"]
             password = serializer.data["password"]
-            city = serializer.data["city"]
 
         else:
             content = {
@@ -150,7 +148,6 @@ class signup(APIView):
             # if username and password:
             user = User.objects.get(username=username)
 
-
         # else:
         #
         #     content = {
@@ -164,6 +161,8 @@ class signup(APIView):
                 "user_created": True,
                 "Token": user.auth_token.key
             }
+            user = authenticate(username=username, password=password)
+            login(request, user)
             return Response(content, status=status.HTTP_201_CREATED)
         else:
             content = {
@@ -331,15 +330,15 @@ class smsvalidation(APIView):
         print(request.headers)
         # Store language back into session if it is not present
         print(hasattr(request, 'session'))
-       
-        if user==None:
+
+        if user == None:
             if hasattr(request, 'session'):
                 # request.session.setdefault('django_language', language)
                 user = request.session['username']
                 print(request.session['username'])
             else:
-                content={
-                    "message" : "سشن وجود ندارد لطفا پارامتر username را وارد کنید"
+                content = {
+                    "message": "سشن وجود ندارد لطفا پارامتر username را وارد کنید"
                 }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
@@ -349,7 +348,7 @@ class smsvalidation(APIView):
         #     }
         #     return Response(content, status=status.HTTP_400_BAD_REQUEST)
         #
-            # print(request.session['username'])
+        # print(request.session['username'])
 
         print(user)
         smscode = data.get("smscode")

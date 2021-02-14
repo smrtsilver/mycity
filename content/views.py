@@ -91,6 +91,8 @@ class get_tariff(APIView):
 
 
 class get_group(APIView):
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
 
         if (request.data.get("group") is None) or int(request.data["group"]) == 0:

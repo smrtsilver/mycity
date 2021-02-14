@@ -6,9 +6,8 @@ from accounts.models import sms
 def sendsmsmethod(number, format=None):
 
         try:
-            print(number)
 
-            data = int(number)
+            data = number
             a = sms.objects.get_or_create(phonenumber=data)
             print(a,a[0].key)
             time_otp = pyotp.TOTP(a[0].key, interval=120)

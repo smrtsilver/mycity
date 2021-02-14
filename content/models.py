@@ -32,7 +32,6 @@ def get_upload_path(instance, filename):
 #     slug = slugify(title)
 #     return "post_images/%s-%s" % (slug, filename)
 
-
 class Image(models.Model):
     image = models.ImageField(upload_to="a", default="no-image.png")
     album = models.ForeignKey("ImageAlbum", related_name="imagesA", on_delete=models.CASCADE)
@@ -50,16 +49,15 @@ class Image(models.Model):
                     temp.save()
             except Image.DoesNotExist:
                 pass
-        else:
-
-            try:
-                temp = Image.objects.get(mainpic=True)
-
-            except:
-
-                self.mainpic = True
-                self.save()
-
+        # else:
+        #
+        #     try:
+        #         temp= Image.objects.get(mainpic=True)
+        #
+        #     except:
+        #
+        #         self.mainpic = True
+        #         self.save()
         super(Image, self).save(*args, **kwargs)
     # content_connect = models.ForeignKey("content", related_name='images', on_delete=models.CASCADE)
     # name = models.CharField(max_length=255)
@@ -77,23 +75,14 @@ class base_content(models.Model):
     update_time = jmodels.jDateTimeField(auto_now=True)
     city = models.CharField(max_length=20)
     valid = models.BooleanField(default=False)
+    phonenumber = models.CharField(max_length=12)
 
-
-    # create_time = models.DateTimeField(auto_now=True)
-    # image = models.Imag()eField
-    # content_connect = models.ForeignKey("content", related_name='images', on_delete=models.CASCADE)
-    # def save(self, *args, **kwargs):
-    #     ''' On save, update timestamps '''
-    #     if not self.id:
-    #         self.created = timezone.now()
-    #     self.modified = timezone.now()
-    #     return super(User, self).save(*args, **kwargs)
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
 
     # todo share post
     def get_main_pic(self):
-        return self.album.get_main_image()
+        return self.modelAlbum.get_main_image()
 
     def get_date(self):
         year = self.create_time.date().year
@@ -107,14 +96,18 @@ class base_content(models.Model):
         second = self.create_time.time().second
         return f"{hour}:{minute}:{second}"
 
+    def liked(self, user):
+        if self.likes.filter(user.id).exist():
+            return True
+        else:
+            return False
+
     @property
     def fulltime(self):
         date = self.get_date()
         time = self.get_time()
         return f"{date} {time}"
 
-    # def get_absolute_url(self):
-    #     return reverse('blogpost-detail', kwargs={'pk': self.pk})
     @property
     def number_of_comments(self):
         return Comment.objects.filter(blogpost_connected=self).filter(approved_comment=True).count()
@@ -127,6 +120,19 @@ class base_content(models.Model):
         return self.title
     # ToDo compress image
 
+    # create_time = models.DateTimeField(auto_now=True)
+    # image = models.Imag()eField
+    # content_connect = models.ForeignKey("content", related_name='images', on_delete=models.CASCADE)
+    # def save(self, *args, **kwargs):
+    #     ''' On save, update timestamps '''
+    #     if not self.id:
+    #         self.created = timezone.now()
+    #     self.modified = timezone.now()
+    #     return super(User, self).save(*args, **kwargs)
+
+    # def get_absolute_url(self):
+    #     return reverse('blogpost-detail', kwargs={'pk': self.pk})
+
     # def save(self, *args, **kwargs):
     #     super().save(*args, **kwargs)
     #     img = Image.open(self.image.path)
@@ -136,8 +142,6 @@ class base_content(models.Model):
     #         img.save(self.image.path)
 
 
-
-#
 class Comment(models.Model):
     class Meta:
         ordering = ['create_time']
@@ -223,8 +227,6 @@ class group(models.Model):
 #
 #     def __str__(self):
 #         return ' {} ({})'.format(self.sub_categoryname, self.id)
-
-
 class platform(models.Model):
     name = models.CharField(max_length=20)
 
@@ -239,6 +241,7 @@ class tariff(models.Model):
 
     def __str__(self):
         return "{} - {} ".format(self.platform, self.description)
+
 
 # class Product(models.Model):
 #     name = models.CharField(max_length=255)
@@ -261,6 +264,7 @@ class tariff(models.Model):
 class ImageAlbum(models.Model):
     album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.DO_NOTHING, null=True,
                                  editable=False)
+
     # class Meta:
     #     verbose_name="آلبوم"
     #     verbose_name_plural="آلبوم ها"
@@ -287,9 +291,6 @@ class ImageAlbum(models.Model):
     @receiver(post_save, sender=base_content)
     def create_or_update_album(sender, instance, created, **kwargs):
         if created:
-           ImageAlbum.objects.create(album=instance)
+            ImageAlbum.objects.create(album=instance)
 
         # instance.ImageAlbum.save()
-
-
-
