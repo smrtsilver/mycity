@@ -130,6 +130,8 @@ REST_FRAMEWORK = {
     # 'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.AllowAny'
 
     )
 }

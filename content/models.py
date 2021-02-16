@@ -101,7 +101,9 @@ class base_content(models.Model):
             return True
         else:
             return False
-
+    @property
+    def get_album(self):
+        return self.modelAlbum
     @property
     def fulltime(self):
         date = self.get_date()
@@ -193,6 +195,8 @@ class realstate(models.Model):
 class employment(base_content):
     salary = models.IntegerField()
     address = models.CharField(max_length=100)
+    # bime=models.CharField(max_length=10)
+
 
 
 class group(models.Model):
@@ -262,7 +266,7 @@ class tariff(models.Model):
 #     author = models.CharField(max_length=255)
 #     album = models.OneToOneField(ImageAlbum, related_name='model', on_delete=models.CASCADE)
 class ImageAlbum(models.Model):
-    album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.DO_NOTHING, null=True,
+    album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.CASCADE, null=True,
                                  editable=False)
 
     # class Meta:
@@ -272,6 +276,10 @@ class ImageAlbum(models.Model):
     def get_images(self):
         image = self.imagesA.all()
         return image
+
+    def set_images(self, images):
+        for i in images:
+            self.imagesA.create(image=i)
 
     def get_main_image(self):
         return self.imagesA.filter(mainpic=True)

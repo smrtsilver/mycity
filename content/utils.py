@@ -1,3 +1,9 @@
+
+def modify_input_for_multiple_files(property_id, image):
+    dict = {}
+    dict['album'] = property_id.id
+    dict['image'] = image
+    return dict
 #
 #
 #
