@@ -13,6 +13,8 @@ from django_jalali.db import models as jmodels
 
 
 #
+from content.utils import compress
+
 
 def get_upload_path(instance, filename):
     # model = instance.content.__class__._meta
@@ -49,6 +51,13 @@ class Image(models.Model):
                     temp.save()
             except Image.DoesNotExist:
                 pass
+        new_image = compress(self.image)
+        self.image = new_image
+        super().save(*args, **kwargs)
+        # instance = super(Image, self).save(*args, **kwargs)
+        # image = Image.open(instance.photo.path)
+        # image.save(instance.photo.path, quality=50, optimize=True)
+        # return instance
         # else:
         #
         #     try:
@@ -76,6 +85,7 @@ class base_content(models.Model):
     city = models.CharField(max_length=20)
     valid = models.BooleanField(default=False)
     phonenumber = models.CharField(max_length=12)
+    address=models.TextField(null=True,blank=True)
 
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
@@ -96,11 +106,10 @@ class base_content(models.Model):
         second = self.create_time.time().second
         return f"{hour}:{minute}:{second}"
 
-    def liked(self, user):
-        if self.likes.filter(user.id).exist():
-            return True
-        else:
-            return False
+    def get_like(self, user_id):
+        return self.likes.filter(user_connect_id=user_id)
+
+
     @property
     def get_album(self):
         return self.modelAlbum
@@ -173,7 +182,8 @@ class like(models.Model):
         return f"{self.content_connect}-{self.user_connect}"
 
     def dislike(self):
-        pass
+        self.delete()
+
 
 
 class city_prob(base_content):
@@ -194,7 +204,7 @@ class realstate(models.Model):
 
 class employment(base_content):
     salary = models.IntegerField()
-    address = models.CharField(max_length=100)
+    # address = models.CharField(max_length=100)
     # bime=models.CharField(max_length=10)
 
 

@@ -74,12 +74,13 @@ class createcontent(APIView):
     # parser_classes = (FileUploadParser,)
     # MultiPartParser
     def post(self, request):
+        global arr
         data = request.data
         content = contentserializers(data=request.data, context={'request': request})
         if content.is_valid():
             obj = content.save(author=request.user.profile)
         else:
-            return Response(content.errors,status=status.HTTP_200_OK)
+            return Response(content.errors, status=status.HTTP_200_OK)
         if "image" in request.data:
             images = dict((request.data).lists())['image']
             arr = []
@@ -94,12 +95,18 @@ class createcontent(APIView):
                         file_serializer.save()
                     arr.append(file_serializer.data)
                 else:
-                    return Response(file_serializer.errors,status=status.HTTP_200_OK)
-        context = {
-            "message": "آگهی با موفقیت ایجاد شد و پس از تایید نمایش داده می شود"
-        }
+                    return Response(file_serializer.errors, status=status.HTTP_200_OK)
+            context = {
+                "message": "آگهی با موفقیت ایجاد شد و پس از تایید نمایش داده می شود",
 
-        return Response(context,status=status.HTTP_200_OK)
+            }
+            return Response(context, status=status.HTTP_200_OK)
+        else:
+            context = {
+                "message": "آگهی با موفقیت ایجاد شد و پس از تایید نمایش داده می شود",
+            }
+
+            return Response(context, status=status.HTTP_200_OK)
 
         # ser=ImageSerializer(data=data)
         # a=dict((request.data).lists())['image']
@@ -176,7 +183,7 @@ class get_content(APIView):
             group_id = data["group"]
             query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).order_by("create_time")[
                     skip:skip + step]
-            ser = contentserializers(query, many=True)
+            ser = contentserializers(query, many=True,context={"request": request })
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
             data = {"group": "این فیلد لازم است",
@@ -199,3 +206,25 @@ class get_slider(APIView):
 
 class comment_remove(APIView):
     pass
+class getorsetlike(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self,request):
+        if "post_id" in request.data.keys():
+            try:
+                query=base_content.objects.get(id=request.data.get("post_id"))
+
+            except:
+                context = {"message": "پست یافت نشد!"}
+                return Response(context,status=status.HTTP_200_OK)
+            else:
+                likeobj=query.get_like(user_id=request.user.profile.id)
+                if likeobj.exists():
+                    likeobj.delete()
+                    return Response({"liked":False},status=status.HTTP_200_OK)
+                else:
+                    like.objects.create(user_connect_id=request.user.profile.id,content_connect=query)
+                    return Response({"liked":True},status=status.HTTP_200_OK)
+
+        else:
+            context={"message": "آیدی پست ارسال نشده است"}
+            return Response(context,status=status.HTTP_200_OK)

@@ -239,15 +239,15 @@ class forgotpass(APIView):
             password = serializer.data["password"]
             try:
                 user = User.objects.get(username=username)
-                user.set_password(password)
-                user.save()
             except Exception as e:
                 content = {
-                    "message": "بروز خطا",
+                    "message": "کاربر یافت نشد",
                     "errorcontent": e
                 }
-                return Response(content, status=status.HTTP_400_BAD_REQUEST)
+                return Response(content, status=status.HTTP_200_OK)
             else:
+                user.set_password(password)
+                user.save()
                 content = {
                     "message": "پسورد با موفقیت تغییر پیدا کرد",
                     "success": True

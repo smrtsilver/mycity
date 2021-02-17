@@ -7,12 +7,13 @@ from accounts.models import profile
 class PhoneNumberSerializer(serializers.Serializer):
     username = serializers.RegexField(regex=r'^(\098|98|0)?9\d{9}$',
                                       error_messages={
-                                          "eeror": "Phone number must be entered in the format: '09xxxxxxxxx'. Up to "
+                                          "error": "Phone number must be entered in the format: '09xxxxxxxxx'. Up to "
                                                    "11 digits allowed."},required=True)
 
 
 class loginserializers(serializers.Serializer):
-    username = PhoneNumberSerializer()
+    #todo phonenumber validator
+    username = serializers.CharField()
     password = serializers.CharField(required=True)
 
 
