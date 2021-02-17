@@ -12,10 +12,9 @@ class ImageSerializer(serializers.ModelSerializer):
     #     child=serializers.ImageField(allow_empty_file=False)
     # )
 
-
     class Meta:
         model = Image
-        fields = ("image","album","mainpic")
+        fields = ("image", "album", "mainpic")
 
         extra_kwargs = {
             'album': {'write_only': True},
@@ -77,7 +76,7 @@ class contentserializers(serializers.ModelSerializer):
     number_of_comments = serializers.ReadOnlyField()
     number_of_likes = serializers.ReadOnlyField()
     liked = serializers.SerializerMethodField()
-
+    bookmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = base_content
@@ -92,13 +91,21 @@ class contentserializers(serializers.ModelSerializer):
     #     results = sorted(content.objects.all(), key=lambda m: m.number_of_likes,reverse=True)[:2]
     #     ser = topcontentserializers(results, many=True)
     #     return ser.data
+    def get_bookmrk(self, instance):
+        request = self.context.get('request')
+        user = request.user
+        if user.is_anonymous:
+            return False
+        obj = instance.get_bookmark(user.profile.id)
+        return obj.exists()
+
     def get_liked(self, instance):
-            request = self.context.get('request')
-            user = request.user
-            if user.is_anonymous:
-                return False
-            obj=instance.get_like(user.profile.id)
-            return obj.exists()
+        request = self.context.get('request')
+        user = request.user
+        if user.is_anonymous:
+            return False
+        obj = instance.get_like(user.profile.id)
+        return obj.exists()
 
     def to_representation(self, instance):
         # Result = dict()

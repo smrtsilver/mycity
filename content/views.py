@@ -183,7 +183,7 @@ class get_content(APIView):
             group_id = data["group"]
             query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).order_by("create_time")[
                     skip:skip + step]
-            ser = contentserializers(query, many=True,context={"request": request })
+            ser = contentserializers(query, many=True, context={"request": request})
             return Response(ser.data, status=status.HTTP_200_OK)
         else:
             data = {"group": "این فیلد لازم است",
@@ -206,25 +206,77 @@ class get_slider(APIView):
 
 class comment_remove(APIView):
     pass
-class getorsetlike(APIView):
+
+
+class getorset_like_bookmark(APIView):
     permission_classes = (IsAuthenticated,)
-    def post(self,request):
-        if "post_id" in request.data.keys():
+
+    def post(self, request):
+        if any(x in ["post_id", "type"] for x in request.data.keys()):
+            type = request.data["type"]
             try:
-                query=base_content.objects.get(id=request.data.get("post_id"))
+                query = base_content.objects.get(id=request.data.get("post_id"))
 
             except:
                 context = {"message": "پست یافت نشد!"}
-                return Response(context,status=status.HTTP_200_OK)
+                return Response(context, status=status.HTTP_200_OK)
             else:
-                likeobj=query.get_like(user_id=request.user.profile.id)
-                if likeobj.exists():
-                    likeobj.delete()
-                    return Response({"liked":False},status=status.HTTP_200_OK)
+                if type == "bookmark":
+                    bookmarkobj = query.get_bookmark(user_id=request.user.profile.id)
+                    if bookmarkobj.exists():
+                        bookmarkobj.delete()
+                        return Response({"bookmarked": False}, status=status.HTTP_200_OK)
+                    else:
+                        bookmark.objects.create(user_connect_id=request.user.profile.id, content_connect=query)
+                        return Response({"bookmarked": True}, status=status.HTTP_200_OK)
+                elif type == "like":
+                    likeobj = query.get_like(user_id=request.user.profile.id)
+                    if likeobj.exists():
+                        likeobj.delete()
+                        return Response({"liked": False}, status=status.HTTP_200_OK)
+                    else:
+                        like.objects.create(user_connect_id=request.user.profile.id, content_connect=query)
+                        return Response({"liked": True}, status=status.HTTP_200_OK)
                 else:
-                    like.objects.create(user_connect_id=request.user.profile.id,content_connect=query)
-                    return Response({"liked":True},status=status.HTTP_200_OK)
-
+                    context = {
+                        "message": "متد درستی صدا زده نشده است"
+                    }
+                    return Response(context, status=status.HTTP_200_OK)
         else:
-            context={"message": "آیدی پست ارسال نشده است"}
-            return Response(context,status=status.HTTP_200_OK)
+            context = {"message": "آیدی پست ارسال نشده است"}
+            return Response(context, status=status.HTTP_200_OK)
+
+
+# class getorsetlike(APIView):
+#     permission_classes = (IsAuthenticated,)
+#
+#     def post(self, request):
+#         if "post_id" in request.data.keys():
+#             try:
+#                 query = base_content.objects.get(id=request.data.get("post_id"))
+#
+#             except:
+#                 context = {"message": "پست یافت نشد!"}
+#                 return Response(context, status=status.HTTP_200_OK)
+#             else:
+#                 likeobj = query.get_like(user_id=request.user.profile.id)
+#                 if likeobj.exists():
+#                     likeobj.delete()
+#                     return Response({"liked": False}, status=status.HTTP_200_OK)
+#                 else:
+#                     like.objects.create(user_connect_id=request.user.profile.id, content_connect=query)
+#                     return Response({"liked": True}, status=status.HTTP_200_OK)
+#
+#         else:
+#             context = {"message": "آیدی پست ارسال نشده است"}
+#             return Response(context, status=status.HTTP_200_OK)
+
+
+class get_mycard(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user_profile = request.user.profile
+        query = base_content.objects.filter(author=user_profile).order_by("create_time")
+        ser = contentserializers(query, many=True, context={"request": request})
+        return Response(ser.data, status=status.HTTP_200_OK)

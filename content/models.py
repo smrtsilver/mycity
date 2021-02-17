@@ -7,7 +7,6 @@ from django.dispatch import receiver
 from accounts.models import profile
 from django_jalali.db import models as jmodels
 
-
 # from content.utils import foreingkeylimit
 # from content.utils import find_by_key
 
@@ -85,7 +84,7 @@ class base_content(models.Model):
     city = models.CharField(max_length=20)
     valid = models.BooleanField(default=False)
     phonenumber = models.CharField(max_length=12)
-    address=models.TextField(null=True,blank=True)
+    address = models.TextField(null=True, blank=True)
 
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
@@ -109,10 +108,13 @@ class base_content(models.Model):
     def get_like(self, user_id):
         return self.likes.filter(user_connect_id=user_id)
 
+    def get_bookmark(self, user_id):
+        return self.post_bookmark.filter(user_connect_id=user_id)
 
     @property
     def get_album(self):
         return self.modelAlbum
+
     @property
     def fulltime(self):
         date = self.get_date()
@@ -174,6 +176,14 @@ class Comment(models.Model):
         return str(self.author) + ', ' + self.blogpost_connected.title[:40]
 
 
+class bookmark(models.Model):
+    content_connect = models.ForeignKey(base_content, related_name="post_bookmark", on_delete=models.CASCADE)
+    user_connect = models.ForeignKey(profile, on_delete=models.CASCADE, related_name="bookmarks")
+
+    def __str__(self):
+        return f"{self.content_connect}-{self.user_connect}"
+
+
 class like(models.Model):
     content_connect = models.ForeignKey(base_content, related_name="likes", on_delete=models.CASCADE)
     user_connect = models.ForeignKey(profile, on_delete=models.CASCADE)
@@ -183,7 +193,6 @@ class like(models.Model):
 
     def dislike(self):
         self.delete()
-
 
 
 class city_prob(base_content):
@@ -206,7 +215,6 @@ class employment(base_content):
     salary = models.IntegerField()
     # address = models.CharField(max_length=100)
     # bime=models.CharField(max_length=10)
-
 
 
 class group(models.Model):
