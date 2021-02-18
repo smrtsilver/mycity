@@ -320,3 +320,15 @@ class ImageAlbum(models.Model):
             ImageAlbum.objects.create(album=instance)
 
         # instance.ImageAlbum.save()
+
+
+@receiver(pre_save, sender=base_content)
+def do_something_if_changed(sender, instance, **kwargs):
+    try:
+        obj = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        pass  # Object is new, so field hasn't technically changed, but you may want to do something else here.
+    else:
+        if not obj.valid == instance.valid:
+            if instance.valid:# Field has changed
+                print("hi")

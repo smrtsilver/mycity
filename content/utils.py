@@ -24,6 +24,8 @@ def modify_input_for_multiple_files(property_id, image):
     dict['album'] = property_id.id
     dict['image'] = image
     return dict
+def send_sms(instance,method):
+    pass
 #
 #
 #
