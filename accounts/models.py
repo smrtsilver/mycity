@@ -19,14 +19,14 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 class profile(models.Model):
     #Todo folderbandi
     profile_image=models.ImageField(upload_to="profile",default="1.jpg")
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="userprofile")
     city = models.CharField(max_length=30)
 
     @receiver(post_save, sender=User)
     def create_or_update_user_profile(sender, instance, created, **kwargs):
         if created:
             profile.objects.create(user=instance)
-        instance.profile.save()
+        instance.userprofile.save()
 
     def __str__(self):
         return self.user.username

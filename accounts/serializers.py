@@ -8,11 +8,11 @@ class PhoneNumberSerializer(serializers.Serializer):
     username = serializers.RegexField(regex=r'^(\098|98|0)?9\d{9}$',
                                       error_messages={
                                           "error": "Phone number must be entered in the format: '09xxxxxxxxx'. Up to "
-                                                   "11 digits allowed."},required=True)
+                                                   "11 digits allowed."}, required=True)
 
 
 class loginserializers(serializers.Serializer):
-    #todo phonenumber validator
+    # todo phonenumber validator
     username = serializers.CharField()
     password = serializers.CharField(required=True)
 
@@ -20,7 +20,6 @@ class loginserializers(serializers.Serializer):
 # class signupserializers(serializers.Serializer):
 #     username = serializers.IntegerField(required=True)
 #     password = serializers.CharField(required=True)
-
 
 
 class resetserializers(serializers.Serializer):
@@ -39,6 +38,39 @@ class userserializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = "__all__"
+
+
+class profileuserserializers(serializers.ModelSerializer):
+    firstname = serializers.CharField(source="user.first_name")
+    lastname = serializers.CharField(source="user.last_name")
+
+    # profile_image=serializers.ImageField()
+    class Meta:
+        model = profile
+
+        exclude = ("user",)
+
+    def update(self, instance, validated_data):
+
+            user_data = validated_data.pop('user')
+            user = instance.user
+
+            # * User Info
+            instance.city = validated_data.get(
+                'city', instance.city)
+            instance.profile_image = validated_data.get(
+                'profile_image', instance.profile_image)
+
+            instance.save()
+
+            # * AccountProfile Info
+            user.first_name = user_data.get(
+                'first_name', user.first_name)
+            user.last_name = user_data.get(
+                'last_name', user.last_name)
+            user.save()
+
+            return instance
 
 
 class profileserializer(serializers.ModelSerializer):

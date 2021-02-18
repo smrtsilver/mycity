@@ -1,6 +1,8 @@
 import pyotp
 from django.contrib.auth import authenticate, login
 from rest_framework import status
+from rest_framework.parsers import  MultiPartParser
+
 # from rest_framework.authtoken.admin import User
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
@@ -226,13 +228,6 @@ class forgotpass(APIView):
 
     def post(self, request):
 
-        # data=request.data
-        # username=data.get("username")
-        # password=data.get("password")
-        #
-        # if not username:
-        #     username = request.session['username']
-
         serializer = loginserializers(data=request.data)
         if serializer.is_valid():
             username = serializer.data["username"]
@@ -384,3 +379,54 @@ class smsvalidation(APIView):
             }
 
             return Response(content, status=200)
+
+
+# Todo
+class changepassword(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        return Response(status=status.HTTP_200_OK)
+
+
+class changeprofiledetails(APIView):
+    permission_classes = (IsAuthenticated,)
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request):
+        if "method" in request.data.keys():
+            method = request.data.get("method")
+            query = profile.objects.filter(user=request.user)
+            if method == "show":
+                ser = profileuserserializers(query, many=True)
+                return Response(ser.data, status=status.HTTP_200_OK)
+            elif method == "edit":
+                    serializer = profileuserserializers(query[0], data=request.data, partial=True)
+                    if serializer.is_valid():
+                        serializer.save()
+                        context = {"data": serializer.data,
+                                   "message": "تغییرات با موفقیت انجام شد"}
+                        return Response(context)
+                    else:
+                        context = {"data": serializer.errors,
+                                   "message": "بروز خطا"}
+                        return Response(context, status=status.HTTP_200_OK)
+
+                # ser = profileuserserializers(data=request.data, instance=query[0],partial=True)
+                # if ser.is_valid():
+                #     context = {"data": ser.data,
+                #                "message": "تغییرات با موفقیت انجام شد"}
+                # else:
+                #     context = {"data": ser.errors,
+                #                "message": "بروز خطا"}
+                # return Response(context, status=status.HTTP_200_OK)
+            else:
+
+                context = {"message": "نام متد ارسال شده معتبر نیست"}
+
+                return Response(context, status=status.HTTP_200_OK)
+
+        else:
+            context = {"message": "نام متد ارسال نشده"}
+
+            return Response(context, status=status.HTTP_200_OK)

@@ -15,6 +15,7 @@ urlpatterns = [
     path("likeorbookmark/",views.getorset_like_bookmark.as_view()),
     path("mycard/",views.get_mycard.as_view())
 
+
     # path("subcategory/",views.get_subgroup.as_view())
 
 
