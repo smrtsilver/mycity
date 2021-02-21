@@ -52,7 +52,6 @@ class get_group(APIView):
             ser = groupserializers(group.objects.filter(parent__id=group_id), many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
-
 # class get_subgroup(APIView):
 #     def post(self, request):
 #         data = request.data
@@ -222,20 +221,20 @@ class getorset_like_bookmark(APIView):
                 return Response(context, status=status.HTTP_200_OK)
             else:
                 if type == "bookmark":
-                    bookmarkobj = query.get_bookmark(user_id=request.user.profile.id)
+                    bookmarkobj = query.get_bookmark(user_id=request.user.userprofile.id)
                     if bookmarkobj.exists():
                         bookmarkobj.delete()
                         return Response({"bookmarked": False}, status=status.HTTP_200_OK)
                     else:
-                        bookmark.objects.create(user_connect_id=request.user.profile.id, content_connect=query)
+                        bookmark.objects.create(user_connect_id=request.user.userprofile.id, content_connect=query)
                         return Response({"bookmarked": True}, status=status.HTTP_200_OK)
                 elif type == "like":
-                    likeobj = query.get_like(user_id=request.user.profile.id)
+                    likeobj = query.get_like(user_id=request.user.userprofile.id)
                     if likeobj.exists():
                         likeobj.delete()
                         return Response({"liked": False}, status=status.HTTP_200_OK)
                     else:
-                        like.objects.create(user_connect_id=request.user.profile.id, content_connect=query)
+                        like.objects.create(user_connect_id=request.user.userprofile.id, content_connect=query)
                         return Response({"liked": True}, status=status.HTTP_200_OK)
                 else:
                     context = {
@@ -245,7 +244,6 @@ class getorset_like_bookmark(APIView):
         else:
             context = {"message": "آیدی پست ارسال نشده است"}
             return Response(context, status=status.HTTP_200_OK)
-
 
 # class getorsetlike(APIView):
 #     permission_classes = (IsAuthenticated,)

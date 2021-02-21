@@ -34,6 +34,9 @@ def get_upload_path(instance, filename):
 #     return "post_images/%s-%s" % (slug, filename)
 
 class Image(models.Model):
+    class Meta:
+        ordering = ["-mainpic"]
+
     image = models.ImageField(upload_to="a", default="no-image.png")
     album = models.ForeignKey("ImageAlbum", related_name="imagesA", on_delete=models.CASCADE)
     mainpic = models.BooleanField(default=False)
@@ -75,6 +78,12 @@ class Image(models.Model):
 
 
 class base_content(models.Model):
+    valid_choices=(
+        (True,"تایید"),
+        (False,"تایید نشد")
+    )
+
+
     author = models.ForeignKey(profile, on_delete=models.CASCADE)
     group = models.ForeignKey("group", on_delete=models.PROTECT)
     title = models.CharField(max_length=20)
@@ -82,13 +91,15 @@ class base_content(models.Model):
     create_time = jmodels.jDateTimeField(auto_now_add=True)
     update_time = jmodels.jDateTimeField(auto_now=True)
     city = models.CharField(max_length=20)
-    valid = models.BooleanField(default=False)
+    valid = models.BooleanField(blank=True,null=True,choices=valid_choices)
     phonenumber = models.CharField(max_length=12)
     address = models.TextField(null=True, blank=True)
-
+    NOTSHOW=models.BooleanField(default=False)
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
-
+    def delete_post(self):
+        self.NOTSHOW=True
+        return True
     # todo share post
     def get_main_pic(self):
         return self.modelAlbum.get_main_image()
@@ -309,7 +320,7 @@ class ImageAlbum(models.Model):
         return self.imagesA.filter(width__lt=100, length_lt=100)
 
     def __str__(self):
-        return str(self.id)
+        return f"{str(self.id)}-{self.album.title}"
 
     @receiver(post_save, sender=city_prob)
     @receiver(post_save, sender=employment)

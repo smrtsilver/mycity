@@ -20,7 +20,10 @@ class ImageSerializer(serializers.ModelSerializer):
             'album': {'write_only': True},
             'mainpic': {'write_only': True},
         }
-
+    # def to_representation(self, value):
+    #     if value is None:
+    #         return 0
+    #     return super(ImageSerializer, self).to_representation(value)
     # def create(self, validated_data):
     #     images = validated_data.pop('image')
     #     for image in images:
@@ -91,12 +94,12 @@ class contentserializers(serializers.ModelSerializer):
     #     results = sorted(content.objects.all(), key=lambda m: m.number_of_likes,reverse=True)[:2]
     #     ser = topcontentserializers(results, many=True)
     #     return ser.data
-    def get_bookmrk(self, instance):
+    def get_bookmarked(self, instance):
         request = self.context.get('request')
         user = request.user
         if user.is_anonymous:
             return False
-        obj = instance.get_bookmark(user.profile.id)
+        obj = instance.get_bookmark(user.userprofile.id)
         return obj.exists()
 
     def get_liked(self, instance):
@@ -104,7 +107,7 @@ class contentserializers(serializers.ModelSerializer):
         user = request.user
         if user.is_anonymous:
             return False
-        obj = instance.get_like(user.profile.id)
+        obj = instance.get_like(user.userprofile.id)
         return obj.exists()
 
     def to_representation(self, instance):
