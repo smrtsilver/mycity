@@ -25,10 +25,8 @@ class anonymous(APIView):
     def post(self, request):
         global user
         # TODO set validator for number
-        print("anonymous",request.headers)
         ser = PhoneNumberSerializer(data=request.data)
         if ser.is_valid():
-
             # request.session['username'] = user
             # user = int(user)
             try:
@@ -321,7 +319,7 @@ class smsvalidation(APIView):
 
     # @permission_classes([permissions.IsAuthenticated])
     def post(self, request, format=None):
-        print("smsvalid",request.headers)
+
         data = request.data
         ser=smsserializers(data=data)
         if ser.is_valid():

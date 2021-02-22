@@ -20,7 +20,7 @@ admin.site.register(citymodel)
 # make_published.short_description = "Mark selected stories as published"
 
 class base_contentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'valid']
+    list_display = ['title', 'valid',"group"]
     ordering = ['valid']
     # actions = [make_published]
 admin.site.register(base_content, base_contentAdmin)

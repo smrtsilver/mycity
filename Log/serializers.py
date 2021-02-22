@@ -14,3 +14,15 @@ class logactionserializers(serializers.ModelSerializer):
             'content_connect': {'write_only': True},
             'action': {'write_only': True},
         }
+
+    def create(self,validated_data):
+
+        obj=super().create(validated_data)
+        request = self.context.get('request')
+        user = request.user
+        if user.is_anonymous:
+            return obj
+        else:
+            obj.user_connect=user
+            obj.save()
+            return obj

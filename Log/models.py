@@ -15,4 +15,4 @@ class log_action(models.Model):
     date_time=jmodels.jDateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user_connect.username}-{self.content_connect.id}"
+        return f"{self.content_connect.id}"

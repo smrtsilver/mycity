@@ -18,6 +18,7 @@ from accounts.utils import sendsmsmethod
 
 # Create your views here.
 from content.serializers import *
+from django.db.models import Q
 
 # class createcategory(APIView):
 #     def post(self, request):
@@ -180,18 +181,46 @@ class createcontent(APIView):
 class get_content(APIView):
     def post(self, request):
         data = request.data
-        if all(x in data.keys() for x in ['group', 'skip']) and (data.get("group") != "") and (data.get("skip") != ""):
+        ser=getcontentserializer(data=data)
+        if ser.is_valid():
+            skip = ser.validated_data["skip"]
+            city=ser.validated_data["city"]
+            group_id = ser.validated_data["group"]
+            search=ser.validated_data.get('search', None)
             step = 10
-            skip = int(data["skip"])
-            group_id = data["group"]
-            query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).order_by("create_time")[
-                    skip:skip + step]
+            city_id_list = citymodel.objects.all().values_list('id', flat=True)
+            model_filter = Q()
+            if search is not None:
+                model_filter=Q(title__icontains=search) | Q(description__icontains=search)
+
+            if city == 0:
+                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(
+                   model_filter).order_by(
+                    "create_time")[
+                        skip:skip + step]
+            elif city in city_id_list:
+                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(
+                    model_filter).order_by(
+                    "create_time")[
+                        skip:skip + step]
+            else:
+                context={"message":"شهر با این آیدی وجود ندارد"}
+                return Response(context, status=status.HTTP_200_OK)
             ser = contentserializers(query, many=True, context={"request": request})
             return Response(ser.data, status=status.HTTP_200_OK)
+        # if all(x in data.keys() for x in ['city','group', 'skip','search']) and (data.get("group") != "") and (data.get("skip") != ""):
+        #     try:
+        #         skip = int(data["skip"])
+        #         city=int(data["city"])
+        #         group_id = data["group"]
+        #     except:
+        #         data = {"message":"مقادیر صحیح نیستند"}
+        #         return Response(data,status=status.HTTP_200_OK)
+        #     else:
+
         else:
-            data = {"group": "این فیلد لازم است",
-                    "skip": "این فیلد لازم است"}
-            return Response(data, status=status.HTTP_200_OK)
+
+            return Response(ser.errors, status=status.HTTP_200_OK)
 
         # else:
         #     return Response(ser.errors,status=status.HTTP_200_OK)
@@ -286,4 +315,6 @@ class getcity(APIView):
     def post(self,request):
         query=citymodel.objects.all()
         ser=cityserializers(query,many=True)
-        return Response(ser.data,status=status.HTTP_200_OK)
+        a = list(ser.data)
+        a.insert(0, {"id":0,"city_name":"همه"})
+        return Response(a,status=status.HTTP_200_OK)

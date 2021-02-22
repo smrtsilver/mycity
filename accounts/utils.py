@@ -36,8 +36,8 @@ def sendsmsmethod(number, format=None):
 
 def smspanel(number, smscode):
     baseUrl = "http://185.112.33.62/api/v1/rest/sms/send"
-    custom_header = {"token": "b93502c9d8661db7a3ee956220e439d12f5d2d43"}
-    json = {"from": "2000198", "recipients": [f"{number}"], "message": f"{smscode}","authcode":smscode, "type": 0, "patternID": 50}
+    custom_header = {"token": "4f7336e638aeb01b4e2c778923ee35e3a8e662c4"}
+    json = {"from": "2000198", "recipients": [f"{number}"], "message": f"{smscode}","authcode":smscode, "type": 0, "patternID": 116}
     request = requests.post(baseUrl,
                             json=json,headers=custom_header)
     json = request.json()

@@ -129,10 +129,15 @@ class contentserializers(serializers.ModelSerializer):
         # Result.update({"TOP": TOP})
         return ret
 
+
         # def get_tax_status_all(self, obj):  # "get_" + field name
         #     return obj.tax_status(check_item_bought=False)
         # todo use this to check if name is None or not
-
+class getcontentserializer(serializers.Serializer):
+    city=serializers.IntegerField(required=True)
+    skip=serializers.IntegerField(required=True)
+    search=serializers.CharField(required=False)
+    group=serializers.IntegerField(required=True)
     # artist_name = serializers.SerializerMethodField('get_artists_name')
     #
     # def get_artists_name(self, obj):
@@ -214,3 +219,4 @@ class cityserializers(serializers.ModelSerializer):
     class Meta:
         model = citymodel
         fields = "__all__"
+

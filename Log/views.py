@@ -8,7 +8,7 @@ from Log.serializers import logactionserializers
 
 class Log_action(APIView):
     def post(self,request):
-        ser=logactionserializers(data=request.data)
+        ser=logactionserializers(data=request.data,context={"request":request})
         if ser.is_valid():
             ser.save()
             return Response(status=status.HTTP_200_OK)
