@@ -13,7 +13,8 @@ urlpatterns = [
     path("getslider/",views.get_slider.as_view()),
     path("createcontent/",views.createcontent.as_view()),
     path("likeorbookmark/",views.getorset_like_bookmark.as_view()),
-    path("mycard/",views.get_mycard.as_view())
+    path("mycard/",views.get_mycard.as_view()),
+    path("getcity/",views.getcity.as_view())
 
 
     # path("subcategory/",views.get_subgroup.as_view())

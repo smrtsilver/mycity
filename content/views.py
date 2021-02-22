@@ -77,8 +77,9 @@ class createcontent(APIView):
         data = request.data
         content = contentserializers(data=request.data, context={'request': request})
         if content.is_valid():
-            obj = content.save(author=request.user.profile)
+            obj = content.save(author=request.user.userprofile)
         else:
+
             return Response(content.errors, status=status.HTTP_200_OK)
         if "image" in request.data:
             images = dict((request.data).lists())['image']
@@ -96,13 +97,16 @@ class createcontent(APIView):
                 else:
                     return Response(file_serializer.errors, status=status.HTTP_200_OK)
             context = {
-                "message": "آگهی با موفقیت ایجاد شد و پس از تایید نمایش داده می شود",
+                "created": True,
+                "id":obj.id
 
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
             context = {
-                "message": "آگهی با موفقیت ایجاد شد و پس از تایید نمایش داده می شود",
+                "created": True,
+                "id": obj.id
+
             }
 
             return Response(context, status=status.HTTP_200_OK)
@@ -278,3 +282,8 @@ class get_mycard(APIView):
         query = base_content.objects.filter(author=user_profile).order_by("create_time")
         ser = contentserializers(query, many=True, context={"request": request})
         return Response(ser.data, status=status.HTTP_200_OK)
+class getcity(APIView):
+    def post(self,request):
+        query=citymodel.objects.all()
+        ser=cityserializers(query,many=True)
+        return Response(ser.data,status=status.HTTP_200_OK)

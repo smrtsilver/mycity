@@ -80,6 +80,7 @@ class contentserializers(serializers.ModelSerializer):
     number_of_likes = serializers.ReadOnlyField()
     liked = serializers.SerializerMethodField()
     bookmarked = serializers.SerializerMethodField()
+    content_city=serializers.ReadOnlyField()
 
     class Meta:
         model = base_content
@@ -87,6 +88,7 @@ class contentserializers(serializers.ModelSerializer):
         # read_only_fields = ()
         extra_kwargs = {
             'author': {'read_only': True},
+            "city" : {'write_only' : True}
 
         }
 
@@ -94,6 +96,7 @@ class contentserializers(serializers.ModelSerializer):
     #     results = sorted(content.objects.all(), key=lambda m: m.number_of_likes,reverse=True)[:2]
     #     ser = topcontentserializers(results, many=True)
     #     return ser.data
+
     def get_bookmarked(self, instance):
         request = self.context.get('request')
         user = request.user
@@ -206,3 +209,8 @@ class commentserializers(serializers.ModelSerializer):
 #         if self.instance.avatar:
 #             self.instance.avatar.delete()
 #         return super().save(*args, **kwargs)
+class cityserializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = citymodel
+        fields = "__all__"

@@ -29,9 +29,9 @@ class resetserializers(serializers.Serializer):
 
 
 class smsserializers(serializers.Serializer):
-    username = serializers.IntegerField(required=True)
-    smscode = serializers.IntegerField(required=False)
-    sendsms = serializers.BooleanField(required=True)
+    username = serializers.CharField(required=True)
+    smscode = serializers.CharField(required=True)
+    # sendsms = serializers.BooleanField(required=True)
 
 
 class userserializer(serializers.ModelSerializer):

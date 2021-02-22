@@ -25,15 +25,16 @@ class anonymous(APIView):
     def post(self, request):
         global user
         # TODO set validator for number
+        print("anonymous",request.headers)
         ser = PhoneNumberSerializer(data=request.data)
         if ser.is_valid():
 
             # request.session['username'] = user
             # user = int(user)
             try:
-                user = request.data.get("username")
+                user = ser.validated_data["username"]
                 usernumber = User.objects.get(username=user)
-            except:
+            except User.DoesNotExist:
                 # age nabod
                 # request to sms panel
                 out = sendsmsmethod(number=user)
@@ -267,15 +268,16 @@ class forgotpass(APIView):
 class sendsms(APIView):
 
     def post(self, request, format=None):
+        print("sendsms",request.headers)
         # @permission_classes([permissions.IsAuthenticated])
         # def send_sms_code(request, format=None):
         # Time based otp
         data = request.data
         data = data.get("username")
 
-        request.session['username'] = data
+        # request.session['username'] = data
         if data:
-            data = int(data)
+            # data = int(data)
             out = sendsmsmethod(number=data)
             if out["success"]:
                 content = {
@@ -319,67 +321,41 @@ class smsvalidation(APIView):
 
     # @permission_classes([permissions.IsAuthenticated])
     def post(self, request, format=None):
+        print("smsvalid",request.headers)
         data = request.data
-        user = data.get("username")
-        print(user)
-        print(request.headers)
-        # Store language back into session if it is not present
-        print(hasattr(request, 'session'))
+        ser=smsserializers(data=data)
+        if ser.is_valid():
+            user=ser.validated_data["username"]
+            smscode=ser.validated_data["smscode"]
+            number = sms.objects.get_or_create(phonenumber=user)
 
-        if user == None:
-            if hasattr(request, 'session'):
-                # request.session.setdefault('django_language', language)
-                user = request.session['username']
-                print(request.session['username'])
+            if number[0].authenticate(smscode):
+                # if request.user.authenticate(code):
+                #     phone = request.user.phonenumber
+                #     phone.verified = True
+                #     phone.save()
+                # phone = number
+                # phone.verified = True
+                # phone.save()
+                content = {
+                    "authenticate": True
+                }
+
+                return Response(content, status=201)
             else:
                 content = {
-                    "message": "سشن وجود ندارد لطفا پارامتر username را وارد کنید"
+                    "message": "کد وارد شده نادرست است یا منقضی شده است",
+                    "authenticate": False
                 }
-                return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-        # else:
-        #     content = {
-        #         "message": " لطفا پارامتر username را وارد کنید"
-        #     }
-        #     return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        #
-        # print(request.session['username'])
+                return Response(content, status=200)
 
-        print(user)
-        smscode = data.get("smscode")
-        if user and smscode:
-            try:
-                assert int(user), "ورودی صحیح نیست"
-                assert int(smscode), "ورودی صحیح نیست"
-            except Exception as e:
-                content = {
-                    "message": e
-                }
-                return Response(content, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                user = int(user)
-                smscode = int(smscode)
+
+        else:
+
+            return Response(ser.errors,status=status.HTTP_200_OK)
 
         # user = User.objects.get(username=user)
-        number = sms.objects.get_or_create(phonenumber=user)
-
-        if number[0].authenticate(smscode):
-            # phone = number
-            # phone.verified = True
-            # phone.save()
-            content = {
-                "authenticate": True
-            }
-
-            return Response(content, status=201)
-        else:
-            content = {
-                "message": "کد وارد شده نادرست است یا منقضی شده است",
-                "authenticate": False
-            }
-
-            return Response(content, status=200)
-
 
 # Todo
 class changepassword(APIView):

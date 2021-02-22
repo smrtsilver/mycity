@@ -56,6 +56,7 @@ class Image(models.Model):
         new_image = compress(self.image)
         self.image = new_image
         super().save(*args, **kwargs)
+        # super(Image, self).save(*args, **kwargs)
         # instance = super(Image, self).save(*args, **kwargs)
         # image = Image.open(instance.photo.path)
         # image.save(instance.photo.path, quality=50, optimize=True)
@@ -69,7 +70,7 @@ class Image(models.Model):
         #
         #         self.mainpic = True
         #         self.save()
-        super(Image, self).save(*args, **kwargs)
+
     # content_connect = models.ForeignKey("content", related_name='images', on_delete=models.CASCADE)
     # name = models.CharField(max_length=255)
     # default = models.BooleanField(default=False)
@@ -90,7 +91,7 @@ class base_content(models.Model):
     description = models.TextField()
     create_time = jmodels.jDateTimeField(auto_now_add=True)
     update_time = jmodels.jDateTimeField(auto_now=True)
-    city = models.CharField(max_length=20)
+    city= models.ForeignKey("citymodel",on_delete=models.DO_NOTHING,related_name="content_city",null=True)
     valid = models.BooleanField(blank=True,null=True,choices=valid_choices)
     phonenumber = models.CharField(max_length=12)
     address = models.TextField(null=True, blank=True)
@@ -139,7 +140,9 @@ class base_content(models.Model):
     @property
     def number_of_likes(self):
         return like.objects.filter(content_connect=self).count()
-
+    @property
+    def content_city(self):
+        return self.city.city_name
     def __str__(self):
         return self.title
     # ToDo compress image
@@ -164,6 +167,11 @@ class base_content(models.Model):
     #         output_size = (300, 300)
     #         img.thumbnail(output_size)
     #         img.save(self.image.path)
+
+class citymodel(models.Model):
+    city_name=models.CharField(max_length=20)
+    def __str__(self):
+        return self.city_name
 
 
 class Comment(models.Model):
@@ -320,7 +328,7 @@ class ImageAlbum(models.Model):
         return self.imagesA.filter(width__lt=100, length_lt=100)
 
     def __str__(self):
-        return f"{str(self.id)}-{self.album.title}"
+        return f"{str(self.id)}"
 
     @receiver(post_save, sender=city_prob)
     @receiver(post_save, sender=employment)
