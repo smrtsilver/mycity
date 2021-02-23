@@ -18,8 +18,8 @@ from content.utils import compress
 def get_upload_path(instance, filename):
     # model = instance.content.__class__._meta
     year = instance.album.album.create_time.date().year
-    month=instance.album.album.create_time.date().month
-    albumid=instance.album.id
+    month = instance.album.album.create_time.date().month
+    albumid = instance.album.id
     return f'{year}-{month}/{albumid}/{filename}'
 
 
@@ -80,11 +80,10 @@ class Image(models.Model):
 
 
 class base_content(models.Model):
-    valid_choices=(
-        (True,"تایید"),
-        (False,"تایید نشد")
+    valid_choices = (
+        (True, "تایید"),
+        (False, "تایید نشد")
     )
-
 
     author = models.ForeignKey(profile, on_delete=models.CASCADE)
     group = models.ForeignKey("group", on_delete=models.PROTECT)
@@ -92,16 +91,19 @@ class base_content(models.Model):
     description = models.TextField()
     create_time = jmodels.jDateTimeField(auto_now_add=True)
     update_time = jmodels.jDateTimeField(auto_now=True)
-    city= models.ForeignKey("citymodel",on_delete=models.DO_NOTHING,related_name="content_city",null=True)
-    valid = models.BooleanField(blank=True,null=True,choices=valid_choices)
+    city = models.ForeignKey("citymodel", on_delete=models.DO_NOTHING, related_name="content_city", null=True)
+    valid = models.BooleanField(blank=True, null=True, choices=valid_choices)
     phonenumber = models.CharField(max_length=12)
     address = models.TextField(null=True, blank=True)
-    NOTSHOW=models.BooleanField(default=False)
+    NOTSHOW = models.BooleanField(default=False)
+
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
+
     def delete_post(self):
-        self.NOTSHOW=True
+        self.NOTSHOW = True
         return True
+
     # todo share post
     def get_main_pic(self):
         return self.modelAlbum.get_main_image()
@@ -118,11 +120,11 @@ class base_content(models.Model):
         second = self.create_time.time().second
         return f"{hour}:{minute}:{second}"
 
-    def get_like(self, user_id):
-        return self.likes.filter(user_connect_id=user_id)
-
     def get_bookmark(self, user_id):
         return self.post_bookmark.filter(user_connect_id=user_id)
+
+    def get_like(self, user_id):
+        return self.likes.filter(user_connect_id=user_id)
 
     @property
     def get_album(self):
@@ -141,9 +143,11 @@ class base_content(models.Model):
     @property
     def number_of_likes(self):
         return like.objects.filter(content_connect=self).count()
+
     @property
     def content_city(self):
         return self.city.city_name
+
     def __str__(self):
         return self.title
     # ToDo compress image
@@ -169,8 +173,10 @@ class base_content(models.Model):
     #         img.thumbnail(output_size)
     #         img.save(self.image.path)
 
+
 class citymodel(models.Model):
-    city_name=models.CharField(max_length=20)
+    city_name = models.CharField(max_length=20)
+
     def __str__(self):
         return self.city_name
 
@@ -198,7 +204,7 @@ class Comment(models.Model):
 
 class bookmark(models.Model):
     content_connect = models.ForeignKey(base_content, related_name="post_bookmark", on_delete=models.CASCADE)
-    user_connect = models.ForeignKey(profile, on_delete=models.CASCADE, related_name="bookmarks")
+    user_connect = models.ForeignKey(profile, on_delete=models.CASCADE, related_name="profile_bookmarks")
 
     def __str__(self):
         return f"{self.content_connect}-{self.user_connect}"
@@ -350,5 +356,5 @@ def do_something_if_changed(sender, instance, **kwargs):
         pass  # Object is new, so field hasn't technically changed, but you may want to do something else here.
     else:
         if not obj.valid == instance.valid:
-            if instance.valid:# Field has changed
+            if instance.valid:  # Field has changed
                 print("hi")

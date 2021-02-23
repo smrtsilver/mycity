@@ -14,6 +14,8 @@ admin.site.register(platform)
 admin.site.register(Comment)
 admin.site.register(like)
 admin.site.register(citymodel)
+admin.site.register(bookmark)
+
 # admin.site.register(sub_group)
 # def make_published(modeladmin, request, queryset):
 #     queryset.update(status='p')

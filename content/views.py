@@ -199,7 +199,7 @@ class get_content(APIView):
                     "create_time")[
                         skip:skip + step]
             elif city in city_id_list:
-                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(
+                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(city_id=city).filter(
                     model_filter).order_by(
                     "create_time")[
                         skip:skip + step]
@@ -318,3 +318,10 @@ class getcity(APIView):
         a = list(ser.data)
         a.insert(0, {"id":0,"city_name":"همه"})
         return Response(a,status=status.HTTP_200_OK)
+class get_favorite(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self,request):
+        user = request.user
+        query = base_content.objects.filter(post_bookmark__user_connect=user.userprofile)
+        ser=contentserializers(query,many=True,context={"request": request})
+        return Response(ser.data,status=status.HTTP_200_OK)

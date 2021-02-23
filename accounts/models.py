@@ -31,6 +31,7 @@ class profile(models.Model):
             profile.objects.create(user=instance)
         instance.userprofile.save()
 
+
     def __str__(self):
         return self.user.username
 
