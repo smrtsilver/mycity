@@ -8,7 +8,10 @@ from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.contrib.auth.models import User
 
-
+def get_upload_path(instance, filename):
+    # model = instance.content.__class__._meta
+    username=instance.user.username
+    return f'profile/{username}/{filename}'
 # Create your models here.
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
@@ -18,7 +21,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class profile(models.Model):
     #Todo folderbandi
-    profile_image=models.ImageField(upload_to="profile",default="1.jpg")
+    profile_image=models.ImageField(upload_to=get_upload_path,default="1.jpg")
     user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="userprofile")
     city = models.CharField(max_length=30)
 

@@ -17,9 +17,10 @@ from content.utils import compress
 
 def get_upload_path(instance, filename):
     # model = instance.content.__class__._meta
-    model = instance.imagesA.albumname
-
-    return f'albums/{model}/{filename}'
+    year = instance.album.album.create_time.date().year
+    month=instance.album.album.create_time.date().month
+    albumid=instance.album.id
+    return f'{year}-{month}/{albumid}/{filename}'
 
 
 # def get_album_name(instance,):
@@ -37,7 +38,7 @@ class Image(models.Model):
     class Meta:
         ordering = ["-mainpic"]
 
-    image = models.ImageField(upload_to="a", default="no-image.png")
+    image = models.ImageField(upload_to=get_upload_path, default="no-image.png")
     album = models.ForeignKey("ImageAlbum", related_name="imagesA", on_delete=models.CASCADE)
     mainpic = models.BooleanField(default=False)
 

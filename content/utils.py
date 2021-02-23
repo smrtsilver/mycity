@@ -7,7 +7,7 @@ def compress(image):
     im = Image.open(image)
     im_io = BytesIO()
     # im = im.resize([500,500])
-    # im = im.convert("RGB")
+    im = im.convert("RGB")
     # resize = im.resize((240, 240), Image.ANTIALIAS)
     # w, h = image.size
     #

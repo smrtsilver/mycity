@@ -7,7 +7,7 @@ from content.models import *
 admin.site.register(group)
 admin.site.register(tariff)
 admin.site.register(city_prob)
-admin.site.register(ImageAlbum)
+
 admin.site.register(Image)
 admin.site.register(employment)
 admin.site.register(platform)
@@ -18,12 +18,24 @@ admin.site.register(citymodel)
 # def make_published(modeladmin, request, queryset):
 #     queryset.update(status='p')
 # make_published.short_description = "Mark selected stories as published"
-
+class albumInline(admin.TabularInline):
+    model = ImageAlbum
+class ImageInline(admin.TabularInline):
+    model=Image
 class base_contentAdmin(admin.ModelAdmin):
     list_display = ['title', 'valid',"group"]
     ordering = ['valid']
+    inlines = [
+        albumInline,
+    ]
+class albumadmin(admin.ModelAdmin):
+    inlines = [
+        ImageInline,
+    ]
     # actions = [make_published]
 admin.site.register(base_content, base_contentAdmin)
+admin.site.register(ImageAlbum,albumadmin)
+
 
 # @admin.register(Comment)
 # class CommentAdmin(admin.ModelAdmin):
