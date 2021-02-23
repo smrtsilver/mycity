@@ -7,11 +7,14 @@ from accounts.models import sms
 def sendsmsmethod(number, format=None):
     try:
 
+        # a = sms.objects.get_or_create(phonenumber=number)
+        a = sms.objects.update_or_create(phonenumber=number)
+        # a.save()
+        time_otp = a[0].key
         # data = number
-        a = sms.objects.get_or_create(phonenumber=number)
         # print(a,a[0].key)
         # time_otp = pyotp.TOTP(a[0].key, interval=1110)
-        time_otp = a[0].key
+
         # print(time_otp)
         # time_otp = time_otp.now()
         # print(time_otp)
@@ -24,13 +27,13 @@ def sendsmsmethod(number, format=None):
         }
         return content
     else:
-        re = smspanel(number, time_otp)
+        # re = smspanel(number, time_otp)
         content = {
             "message": "کد تایید شما در نرم افزار {} می باشد".format(time_otp),
             "success": True,
-            "smssend": re
+            # "smssend": re
         }
-        smspanel(number, time_otp)
+        # smspanel(number, time_otp)
         return content
 
 

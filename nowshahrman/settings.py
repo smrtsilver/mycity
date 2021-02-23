@@ -54,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+# ALLOWED_HOSTS = ["130.185.78.238",
+# 		"server2.ioplus.ir"]
 
 ROOT_URLCONF = 'nowshahrman.urls'
 

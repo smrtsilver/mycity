@@ -1,6 +1,6 @@
 import string
 
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from accounts.models import sms
 import pyotp
@@ -29,3 +29,7 @@ def create_key(sender, instance, **kwargs):
     """This creates the key for users that don't have keys"""
     if not instance.key:
         instance.key = id_generator(4,"123456789")
+    else:
+        instance.key = id_generator(4,"123456789")
+
+
