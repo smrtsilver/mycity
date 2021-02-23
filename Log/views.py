@@ -14,3 +14,7 @@ class Log_action(APIView):
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(ser.errors,status=status.HTTP_400_BAD_REQUEST)
+
+class server_status(APIView):
+    def post(self,request):
+     return Response(status.HTTP_200_OK)

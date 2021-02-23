@@ -24,7 +24,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("accounts/",include("accounts.urls"),name="accounts"),
     path("contents/", include("content.urls"), name="content"),
-    path("log/",include("Log.urls"))
+    path("log/",include("Log.urls")),
+
 
 # http post http://127.0.0.1:8000/api-token-auth/ username=vitor password=123
 ]
