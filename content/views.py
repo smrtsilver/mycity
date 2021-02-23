@@ -302,7 +302,13 @@ class getorset_like_bookmark(APIView):
 #             context = {"message": "آیدی پست ارسال نشده است"}
 #             return Response(context, status=status.HTTP_200_OK)
 
-
+class getcity(APIView):
+    def post(self,request):
+        query=citymodel.objects.all()
+        ser=cityserializers(query,many=True)
+        a = list(ser.data)
+        a.insert(0, {"id":0,"city_name":"همه"})
+        return Response(a,status=status.HTTP_200_OK)
 class get_mycard(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -311,13 +317,6 @@ class get_mycard(APIView):
         query = base_content.objects.filter(author=user_profile).order_by("create_time")
         ser = contentserializers(query, many=True, context={"request": request})
         return Response(ser.data, status=status.HTTP_200_OK)
-class getcity(APIView):
-    def post(self,request):
-        query=citymodel.objects.all()
-        ser=cityserializers(query,many=True)
-        a = list(ser.data)
-        a.insert(0, {"id":0,"city_name":"همه"})
-        return Response(a,status=status.HTTP_200_OK)
 class get_favorite(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self,request):

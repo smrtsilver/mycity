@@ -1,7 +1,7 @@
 import pyotp
 from django.contrib.auth import authenticate, login
 from rest_framework import status
-from rest_framework.parsers import  MultiPartParser
+from rest_framework.parsers import MultiPartParser
 
 # from rest_framework.authtoken.admin import User
 from django.contrib.auth.models import User
@@ -226,7 +226,152 @@ class signup(APIView):
 class forgotpass(APIView):
 
     def post(self, request):
+        data = request.data
+        ser = resetserializers(data=data)
+        if ser.is_valid():
+            username=ser.validated_data["username"]
+            password=ser.validated_data["password"]
+            smscode=ser.validated_data["smscode"]
+            try:
+                user = User.objects.get(username=username)
+                number = sms.objects.get(phonenumber=user.username)
+            except:
+                # age nabod
+                content = {"message": "بروز خطا در اختصاص پیامک یا یافتن کاربر",
+                               }
+                return Response(content, status=status.HTTP_200_OK)
+            else:
+                if number.authenticate(smscode):
+                    # if request.user.authenticate(code):
+                    #     phone = request.user.phonenumber
+                    #     phone.verified = True
+                    #     phone.save()
+                    # phone = number
+                    # phone.verified = True
+                    # phone.save()
+                    user.set_password(password)
+                    user.save()
+                    content = {
+                        "message": "پسورد با موفقیت تغییر پیدا کرد",
+                        "success": True
+                    }
+                    return Response(content, status=status.HTTP_200_OK)
+                else:
+                    content={
+                        "message": "کد اشتباه وارد شده است",
+                        "success":False
+                    }
+                    return Response(content,status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response(ser.errors,status=status.HTTP_200_OK)
 
+
+
+class sendsms(APIView):
+
+    def post(self, request, format=None):
+
+        data = request.data
+        ser = PhoneNumberSerializer(data=data)
+        if ser.is_valid():
+            username = ser.data["username"]
+            try:
+                user = User.objects.get(username=username)
+            except Exception as e:
+                # Todo karbar nabod chi???
+                content = {
+                    "message": "کاربر یافت نشد",
+                }
+                return Response(content, status=status.HTTP_200_OK)
+            else:
+                out = sendsmsmethod(number=user.username)
+                if out["success"]:
+                    content = {
+                        "smscode": out["message"],
+                        "status": out["success"]
+                    }
+                    return Response(content, status=status.HTTP_200_OK)
+                else:
+                    content = {
+                        "status": out["success"]
+                    }
+                    return Response(content, status=status.HTTP_200_OK)
+        else:
+            return Response(ser.errors, status=status.HTTP_200_OK)
+
+        # try:
+        #
+        #     # user = User.objects.get(username=data)
+        #     a = sms.objects.update_or_create(phonenumber=data)
+        #     time_otp = pyotp.TOTP(a[0].key, interval=500)
+        #     time_otp = time_otp.now()
+        #     # Phone number must be international and start with a plus '+'
+        #     # user_phone_number = request.user.phonenumber.number
+        #     # client.messages.create(
+        #     #     body="Your verification code is " + time_otp,
+        #     #     from_=twilio_phone,
+        #     #     to=user_phone_number
+        #     # )
+        #
+        # except Exception as e:
+        #     content = {
+        #         "message": e
+        #     }
+        #     return Response(content)
+
+        # else:
+        #     contet = {
+        #         "message": "ورودی صجیج نیست"
+        #     }
+        #     return Response(contet)
+
+
+class smsvalidation(APIView):
+
+    # @permission_classes([permissions.IsAuthenticated])
+    def post(self, request, format=None):
+
+        data = request.data
+        ser = smsserializers(data=data)
+        if ser.is_valid():
+            user = ser.validated_data["username"]
+            smscode = ser.validated_data["smscode"]
+            number = sms.objects.get_or_create(phonenumber=user)
+
+            if number[0].authenticate(smscode):
+                # if request.user.authenticate(code):
+                #     phone = request.user.phonenumber
+                #     phone.verified = True
+                #     phone.save()
+                # phone = number
+                # phone.verified = True
+                # phone.save()
+                content = {
+                    "authenticate": True
+                }
+
+                return Response(content, status=201)
+            else:
+                content = {
+                    "message": "کد وارد شده نادرست است یا منقضی شده است",
+                    "authenticate": False
+                }
+
+                return Response(content, status=200)
+
+
+        else:
+
+            return Response(ser.errors, status=status.HTTP_200_OK)
+
+        # user = User.objects.get(username=user)
+
+
+# Todo
+class changepassword(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
         serializer = loginserializers(data=request.data)
         if serializer.is_valid():
             username = serializer.data["username"]
@@ -263,106 +408,6 @@ class forgotpass(APIView):
     #         return Response(content,status=status.HTTP_400_BAD_REQUEST)
 
 
-class sendsms(APIView):
-
-    def post(self, request, format=None):
-        print("sendsms",request.headers)
-        # @permission_classes([permissions.IsAuthenticated])
-        # def send_sms_code(request, format=None):
-        # Time based otp
-        data = request.data
-        data = data.get("username")
-
-        # request.session['username'] = data
-        if data:
-            # data = int(data)
-            out = sendsmsmethod(number=data)
-            if out["success"]:
-                content = {
-                    "smscode": out["message"]
-                }
-                return Response(content, status=status.HTTP_200_OK)
-            else:
-                content = {
-                    "smscode": out["success"]
-                }
-                return Response(content, status=200)
-
-            # try:
-            #
-            #     # user = User.objects.get(username=data)
-            #     a = sms.objects.update_or_create(phonenumber=data)
-            #     time_otp = pyotp.TOTP(a[0].key, interval=500)
-            #     time_otp = time_otp.now()
-            #     # Phone number must be international and start with a plus '+'
-            #     # user_phone_number = request.user.phonenumber.number
-            #     # client.messages.create(
-            #     #     body="Your verification code is " + time_otp,
-            #     #     from_=twilio_phone,
-            #     #     to=user_phone_number
-            #     # )
-            #
-            # except Exception as e:
-            #     content = {
-            #         "message": e
-            #     }
-            #     return Response(content)
-
-        else:
-            contet = {
-                "message": "ورودی صجیج نیست"
-            }
-            return Response(contet)
-
-
-class smsvalidation(APIView):
-
-    # @permission_classes([permissions.IsAuthenticated])
-    def post(self, request, format=None):
-
-        data = request.data
-        ser=smsserializers(data=data)
-        if ser.is_valid():
-            user=ser.validated_data["username"]
-            smscode=ser.validated_data["smscode"]
-            number = sms.objects.get_or_create(phonenumber=user)
-
-            if number[0].authenticate(smscode):
-                # if request.user.authenticate(code):
-                #     phone = request.user.phonenumber
-                #     phone.verified = True
-                #     phone.save()
-                # phone = number
-                # phone.verified = True
-                # phone.save()
-                content = {
-                    "authenticate": True
-                }
-
-                return Response(content, status=201)
-            else:
-                content = {
-                    "message": "کد وارد شده نادرست است یا منقضی شده است",
-                    "authenticate": False
-                }
-
-                return Response(content, status=200)
-
-
-        else:
-
-            return Response(ser.errors,status=status.HTTP_200_OK)
-
-        # user = User.objects.get(username=user)
-
-# Todo
-class changepassword(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request):
-        return Response(status=status.HTTP_200_OK)
-
-
 class changeprofiledetails(APIView):
     permission_classes = (IsAuthenticated,)
     parser_classes = (MultiPartParser,)
@@ -375,25 +420,25 @@ class changeprofiledetails(APIView):
                 ser = profileuserserializers(query, many=True)
                 return Response(ser.data, status=status.HTTP_200_OK)
             elif method == "edit":
-                    serializer = profileuserserializers(query[0], data=request.data, partial=True)
-                    if serializer.is_valid():
-                        serializer.save()
-                        context = {"data": serializer.data,
-                                   "message": "تغییرات با موفقیت انجام شد"}
-                        return Response(context)
-                    else:
-                        context = {"data": serializer.errors,
-                                   "message": "بروز خطا"}
-                        return Response(context, status=status.HTTP_200_OK)
+                serializer = profileuserserializers(query[0], data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    context = {"data": serializer.data,
+                               "message": "تغییرات با موفقیت انجام شد"}
+                    return Response(context)
+                else:
+                    context = {"data": serializer.errors,
+                               "message": "بروز خطا"}
+                    return Response(context, status=status.HTTP_200_OK)
 
-                # ser = profileuserserializers(data=request.data, instance=query[0],partial=True)
-                # if ser.is_valid():
-                #     context = {"data": ser.data,
-                #                "message": "تغییرات با موفقیت انجام شد"}
-                # else:
-                #     context = {"data": ser.errors,
-                #                "message": "بروز خطا"}
-                # return Response(context, status=status.HTTP_200_OK)
+            # ser = profileuserserializers(data=request.data, instance=query[0],partial=True)
+            # if ser.is_valid():
+            #     context = {"data": ser.data,
+            #                "message": "تغییرات با موفقیت انجام شد"}
+            # else:
+            #     context = {"data": ser.errors,
+            #                "message": "بروز خطا"}
+            # return Response(context, status=status.HTTP_200_OK)
             else:
 
                 context = {"message": "نام متد ارسال شده معتبر نیست"}
