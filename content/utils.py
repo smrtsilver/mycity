@@ -24,11 +24,9 @@ def modify_input_for_multiple_files(property_id, image):
     dict['album'] = property_id.id
     dict['image'] = image
     return dict
-def send_sms(instance,method):
-    pass
-#
-#
-#
+# def send_sms(instance,method):
+#     pass
+
 # def find_by_key(data, target):
 #     for k, v in data.items():
 #         if k == target:

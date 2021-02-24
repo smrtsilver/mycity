@@ -4,14 +4,14 @@ from django.contrib import admin
 from content.models import *
 
 # admin.site.register(base_content)
-admin.site.register(group)
-admin.site.register(tariff)
-admin.site.register(city_prob)
+# admin.site.register(group)
+# admin.site.register(tariff)
+# admin.site.register(city_prob)
 
 admin.site.register(Image)
-admin.site.register(employment)
-admin.site.register(platform)
-admin.site.register(Comment)
+# admin.site.register(employment)
+# admin.site.register(platform)
+# admin.site.register(Comment)
 admin.site.register(like)
 admin.site.register(citymodel)
 admin.site.register(bookmark)

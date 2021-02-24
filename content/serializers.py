@@ -84,7 +84,7 @@ class contentserializers(serializers.ModelSerializer):
 
     class Meta:
         model = base_content
-        exclude = ('valid', 'create_time', 'update_time')
+        exclude = ('create_time', 'update_time')
         # read_only_fields = ()
         extra_kwargs = {
             'author': {'read_only': True},

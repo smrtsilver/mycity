@@ -1,36 +1,24 @@
-from django.contrib.auth.decorators import login_required
 from rest_framework.parsers import FileUploadParser, MultiPartParser
-from rest_framework.views import APIView
-import pyotp
-from django.contrib.auth import authenticate
 from rest_framework import status
-# from rest_framework.authtoken.admin import User
-from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated  # <-- Here
+from rest_framework.permissions import IsAuthenticated
 # import requests
 # new_token = Token.objects.create(user=request.user)
-from accounts.models import sms
-from accounts.serializers import *
-from accounts.utils import sendsmsmethod
-
+# from accounts.models import sms
+# from rest_framework.views import APIView
+# import pyotp
+# from rest_framework.authtoken.models import Token
+# from rest_framework.authtoken.admin import User
+# from django.contrib.auth.models import User
+# from django.contrib.auth import authenticate
+# from accounts.serializers import *
+# from accounts.utils import sendsmsmethod
+# from django.contrib.auth.decorators import login_required
 # Create your views here.
 from content.serializers import *
 from django.db.models import Q
 
-# class createcategory(APIView):
-#     def post(self, request):
-#         # data=request.data
-#         # ser=groupserializers(data=data)
-#         # if ser.is_valid():
-#         #     pass
-#         # else:
-#         #     content={
-#         #         "message" : "ورودی ها صحیح نیستند"
-#         #     }
-#         pass
 from content.utils import modify_input_for_multiple_files
 
 
@@ -53,19 +41,6 @@ class get_group(APIView):
             ser = groupserializers(group.objects.filter(parent__id=group_id), many=True)
             return Response(ser.data, status=status.HTTP_200_OK)
 
-# class get_subgroup(APIView):
-#     def post(self, request):
-#         data = request.data
-#         if "group" in data.keys():
-#             group_id = data["group"]
-#
-#             query = sub_group.objects.filter(category_connect__id=group_id)
-#             ser = subgrouoserializers(query, many=True)
-#
-#             return Response(ser.data, status=status.HTTP_200_OK)
-#         else:
-#             data = {"group": "این فیلد لازم است"}
-#             return Response(data, status=status.HTTP_200_OK)
 
 class createcontent(APIView):
     permission_classes = (IsAuthenticated,)
@@ -99,7 +74,7 @@ class createcontent(APIView):
                     return Response(file_serializer.errors, status=status.HTTP_200_OK)
             context = {
                 "created": True,
-                "id":obj.id
+                "id": obj.id
 
             }
             return Response(context, status=status.HTTP_200_OK)
@@ -181,30 +156,31 @@ class createcontent(APIView):
 class get_content(APIView):
     def post(self, request):
         data = request.data
-        ser=getcontentserializer(data=data)
+        ser = getcontentserializer(data=data)
         if ser.is_valid():
             skip = ser.validated_data["skip"]
-            city=ser.validated_data["city"]
+            city = ser.validated_data["city"]
             group_id = ser.validated_data["group"]
-            search=ser.validated_data.get('search', None)
+            search = ser.validated_data.get('search', None)
             step = 10
             city_id_list = citymodel.objects.all().values_list('id', flat=True)
             model_filter = Q()
             if search is not None:
-                model_filter=Q(title__icontains=search) | Q(description__icontains=search)
+                model_filter = Q(title__icontains=search) | Q(description__icontains=search)
 
             if city == 0:
                 query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(
-                   model_filter).order_by(
+                    model_filter).order_by(
                     "create_time")[
                         skip:skip + step]
             elif city in city_id_list:
-                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(city_id=city).filter(
+                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(
+                    city_id=city).filter(
                     model_filter).order_by(
                     "create_time")[
                         skip:skip + step]
             else:
-                context={"message":"شهر با این آیدی وجود ندارد"}
+                context = {"message": "شهر با این آیدی وجود ندارد"}
                 return Response(context, status=status.HTTP_200_OK)
             ser = contentserializers(query, many=True, context={"request": request})
             return Response(ser.data, status=status.HTTP_200_OK)
@@ -221,11 +197,6 @@ class get_content(APIView):
         else:
 
             return Response(ser.errors, status=status.HTTP_200_OK)
-
-        # else:
-        #     return Response(ser.errors,status=status.HTTP_200_OK)
-        #
-
 
 class get_slider(APIView):
     def post(self, request):
@@ -278,49 +249,31 @@ class getorset_like_bookmark(APIView):
             context = {"message": "آیدی پست ارسال نشده است"}
             return Response(context, status=status.HTTP_200_OK)
 
-# class getorsetlike(APIView):
-#     permission_classes = (IsAuthenticated,)
-#
-#     def post(self, request):
-#         if "post_id" in request.data.keys():
-#             try:
-#                 query = base_content.objects.get(id=request.data.get("post_id"))
-#
-#             except:
-#                 context = {"message": "پست یافت نشد!"}
-#                 return Response(context, status=status.HTTP_200_OK)
-#             else:
-#                 likeobj = query.get_like(user_id=request.user.profile.id)
-#                 if likeobj.exists():
-#                     likeobj.delete()
-#                     return Response({"liked": False}, status=status.HTTP_200_OK)
-#                 else:
-#                     like.objects.create(user_connect_id=request.user.profile.id, content_connect=query)
-#                     return Response({"liked": True}, status=status.HTTP_200_OK)
-#
-#         else:
-#             context = {"message": "آیدی پست ارسال نشده است"}
-#             return Response(context, status=status.HTTP_200_OK)
 
 class getcity(APIView):
-    def post(self,request):
-        query=citymodel.objects.all()
-        ser=cityserializers(query,many=True)
+    def post(self, request):
+        query = citymodel.objects.all()
+        ser = cityserializers(query, many=True)
         a = list(ser.data)
-        a.insert(0, {"id":0,"city_name":"همه"})
-        return Response(a,status=status.HTTP_200_OK)
+        a.insert(0, {"id": 0, "city_name": "همه"})
+        return Response(a, status=status.HTTP_200_OK)
+
+
 class get_mycard(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        user_profile = request.user.profile
+        user_profile = request.user.userprofile
         query = base_content.objects.filter(author=user_profile).order_by("create_time")
         ser = contentserializers(query, many=True, context={"request": request})
         return Response(ser.data, status=status.HTTP_200_OK)
+
+
 class get_favorite(APIView):
     permission_classes = (IsAuthenticated,)
-    def post(self,request):
+
+    def post(self, request):
         user = request.user
         query = base_content.objects.filter(post_bookmark__user_connect=user.userprofile)
-        ser=contentserializers(query,many=True,context={"request": request})
-        return Response(ser.data,status=status.HTTP_200_OK)
+        ser = contentserializers(query, many=True, context={"request": request})
+        return Response(ser.data, status=status.HTTP_200_OK)

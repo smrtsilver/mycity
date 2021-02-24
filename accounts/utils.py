@@ -6,26 +6,8 @@ from accounts.models import sms
 
 def sendsmsmethod(number, format=None):
 
-        # a = sms.objects.get_or_create(phonenumber=number)
-        # a.save()
-        # data = number
-        # print(a,a[0].key)
-        # time_otp = pyotp.TOTP(a[0].key, interval=1110)
-        # print(time_otp)
-        # time_otp = time_otp.now()
-        # print(time_otp)
-        # time_otp = pyotp.TOTP(request.user.key, interval=300)
-        # time_otp = time_otp.now()
-    try:
         a = sms.objects.update_or_create(phonenumber=number)
         time_otp = a[0].key
-    except Exception as e:
-        content = {
-            "message": e,
-            "success": False
-        }
-        return content
-    else:
         # re = smspanel(number, time_otp)
         content = {
             "message": "کد تایید شما در نرم افزار {} می باشد".format(time_otp),

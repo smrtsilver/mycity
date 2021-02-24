@@ -7,5 +7,5 @@ from accounts.models import profile, sms
 
 
 admin.site.register(profile)
-admin.site.register(sms)
+# admin.site.register(sms)
 

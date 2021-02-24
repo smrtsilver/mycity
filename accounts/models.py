@@ -20,10 +20,13 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 class profile(models.Model):
+    class Meta:
+        verbose_name="کاربر"
+        verbose_name_plural="کاربر"
     #Todo folderbandi
-    profile_image=models.ImageField(upload_to=get_upload_path,default="1.jpg")
-    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name="userprofile")
-    city = models.CharField(max_length=30)
+    profile_image=models.ImageField(verbose_name="تصویر کاربر",upload_to=get_upload_path,default="1.jpg")
+    user = models.OneToOneField(User, verbose_name="اکانت کاربر",on_delete=models.CASCADE,related_name="userprofile")
+    city = models.CharField(verbose_name="شهر کاربر",max_length=30)
 
     @receiver(post_save, sender=User)
     def create_or_update_user_profile(sender, instance, created, **kwargs):
@@ -38,9 +41,12 @@ class profile(models.Model):
 
 class sms(models.Model):
     # methods
-    phonenumber = models.CharField(max_length=15)
-    key = models.CharField(max_length=100, unique=True, blank=True)
-    verified = models.BooleanField(default=False, blank=True, null=True)
+    class Meta:
+        verbose_name="پیامک"
+        verbose_name_plural="پیامک"
+    phonenumber = models.CharField(verbose_name="شماره تلفن",max_length=15)
+    key = models.CharField(verbose_name="کد ارسالی",max_length=100, unique=True, blank=True)
+    verified = models.BooleanField(verbose_name="تایید شده",default=False, blank=True, null=True)
 
     def authenticate(self, otp):
         """ This method authenticates the given otp"""
@@ -54,8 +60,10 @@ class sms(models.Model):
         # t = pyotp.TOTP(self.key, interval=60)
         if self.key == otp:
         # return t.verify(provided_otp)
+            self.key=True
             return True
         else:
+            self.key=False
             return False
 
     def __str__(self):

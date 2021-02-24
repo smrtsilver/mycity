@@ -6,6 +6,7 @@ from content.models import base_content
 
 
 class log_action(models.Model):
+
     action_choices=((1,"View post"),
                     (2,"Call number"))
     user_connect=models.ForeignKey(User,on_delete=models.DO_NOTHING,null=True)
