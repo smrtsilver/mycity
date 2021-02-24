@@ -270,34 +270,83 @@ class forgotpass(APIView):
 class sendsms(APIView):
 
     def post(self, request, format=None):
-
-        data = request.data
-        ser = PhoneNumberSerializer(data=data)
-        if ser.is_valid():
-            username = ser.data["username"]
-            try:
-                user = User.objects.get(username=username)
-            except Exception as e:
-                # Todo karbar nabod chi???
-                content = {
-                    "message": "کاربر یافت نشد",
-                }
-                return Response(content, status=status.HTTP_200_OK)
-            else:
-                out = sendsmsmethod(number=user.username)
-                if out["success"]:
-                    content = {
-                        "smscode": out["message"],
-                        "status": out["success"]
-                    }
-                    return Response(content, status=status.HTTP_200_OK)
+######
+            data = request.data
+            ser = PhoneNumberSerializer(data=data)
+            if ser.is_valid():
+                username = ser.data["username"]
+                if "method" in request.data.keys():
+                    if request.data.get("method")=="resetpass":
+                        try:
+                            user = User.objects.get(username=username)
+                        except Exception as e:
+                            # Todo karbar nabod chi???
+                            content = {
+                                "message": "کاربر یافت نشد",
+                            }
+                            return Response(content, status=status.HTTP_200_OK)
+                        else:
+                            out = sendsmsmethod(number=user.username)
+                            if out["success"]:
+                                content = {
+                                    "smscode": out["message"],
+                                    "status": out["success"]
+                                }
+                                return Response(content, status=status.HTTP_200_OK)
+                            else:
+                                content = {
+                                    "status": out["success"]
+                                }
+                                return Response(content, status=status.HTTP_200_OK)
+                    elif request.data.get("method")=="sendsms":
+                        out = sendsmsmethod(number=username)
+                        if out["success"]:
+                            content = {
+                                "smscode": out["message"]
+                            }
+                            return Response(content, status=status.HTTP_200_OK)
+                        else:
+                            content = {
+                                "smscode": out["success"]
+                            }
+                            return Response(content, status=200)
+                    else:
+                        content = {
+                            "message": "لطفا متد را ارسال کنید"
+                        }
+                        return Response(content, status=status.HTTP_200_OK)
                 else:
-                    content = {
-                        "status": out["success"]
+                    content={
+                        "message":"لطفا متد را ارسال کنید"
                     }
                     return Response(content, status=status.HTTP_200_OK)
-        else:
-            return Response(ser.errors, status=status.HTTP_200_OK)
+            else:
+                return Response(ser.errors, status=status.HTTP_200_OK)
+            # try:
+            #
+            #     # user = User.objects.get(username=data)
+            #     a = sms.objects.update_or_create(phonenumber=data)
+            #     time_otp = pyotp.TOTP(a[0].key, interval=500)
+            #     time_otp = time_otp.now()
+            #     # Phone number must be international and start with a plus '+'
+            #     # user_phone_number = request.user.phonenumber.number
+            #     # client.messages.create(
+            #     #     body="Your verification code is " + time_otp,
+            #     #     from_=twilio_phone,
+            #     #     to=user_phone_number
+            #     # )
+            #
+            # except Exception as e:
+            #     content = {
+            #         "message": e
+            #     }
+            #     return Response(content)
+
+
+#######
+
+
+
 
         # try:
         #
