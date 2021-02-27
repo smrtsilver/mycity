@@ -5,7 +5,7 @@ from accounts.models import profile
 
 
 class PhoneNumberSerializer(serializers.Serializer):
-    username = serializers.RegexField(regex=r'^09?[0-9]{9}$',
+    username = serializers.RegexField(regex=r'^09[0-9]{9}$',
                                       error_messages={
                                           "error": "Phone number must be entered in the format: '09xxxxxxxxx'. Up to "
                                                    "11 digits allowed."}, required=True)

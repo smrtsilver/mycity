@@ -2,6 +2,7 @@ import pyotp
 import requests
 from rest_framework.response import Response
 from accounts.models import sms
+import re
 
 
 def sendsmsmethod(number, format=None):
@@ -19,11 +20,20 @@ def sendsmsmethod(number, format=None):
 
 
 def smspanel(number, smscode):
-    baseUrl = "http://185.112.33.62/api/v1/rest/sms/send"
-    custom_header = {"token": "4f7336e638aeb01b4e2c778923ee35e3a8e662c4"}
-    json = {"from": "2000198", "recipients": [f"{number}"], "message": f"{smscode}","authcode":smscode, "type": 0, "patternID": 116}
-    request = requests.post(baseUrl,
-                            json=json,headers=custom_header)
+    data=re.match(r'^09(3|0)[0-9]{8}$',number)
+
+    baseUrl = "http://185.112.33.62/api/v1/rest/sms/"
+    custom_header = {"token": "b93502c9d8661db7a3ee956220e439d12f5d2d43"}
+    kh_num="90003561"
+    omo_num="10001000000321"
+    basejson = {"from": kh_num,"recipients":[number,],"message":smscode,"type":0,"patternID": 50,"authcode":smscode}
+    if data:
+        basejson["from"]=omo_num
+        basejson["message"]=f"{smscode}کد تایید شما در برنامه شهرمن :"
+        basejson.pop("authcode")
+    else:
+        basejson["from"]=kh_num
+    request = requests.post(baseUrl, json=basejson, headers=custom_header)
     json = request.json()
     if (json):
         return json
