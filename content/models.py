@@ -37,12 +37,12 @@ def get_upload_path(instance, filename):
 class Image(models.Model):
     class Meta:
         ordering = ["-mainpic"]
-        verbose_name="عکس"
-        verbose_name_plural="عکس"
+        verbose_name = "عکس"
+        verbose_name_plural = "عکس"
 
-    image = models.ImageField(verbose_name="تصویر",upload_to=get_upload_path, default="no-image.png")
-    album = models.ForeignKey("ImageAlbum",verbose_name="آلبوم", related_name="imagesA", on_delete=models.CASCADE)
-    mainpic = models.BooleanField(verbose_name="تصویر اصلی",default=False)
+    image = models.ImageField(verbose_name="تصویر", upload_to=get_upload_path, default="no-image.png")
+    album = models.ForeignKey("ImageAlbum", verbose_name="آلبوم", related_name="imagesA", on_delete=models.CASCADE)
+    mainpic = models.BooleanField(verbose_name="تصویر اصلی", default=False)
 
     def __str__(self):
         return str(self.album.id)
@@ -83,22 +83,26 @@ class Image(models.Model):
 
 class base_content(models.Model):
     valid_choices = (
-        (True, "تایید"),
-        (False, "تایید نشد")
+        (1, "تایید شده"),
+        (2, "تایید نشده"),
+        (3, "درحال بررسی")
     )
+
     class Meta:
-        verbose_name="آگهی"
-        verbose_name_plural="آگهی ها"
-    author = models.ForeignKey(profile,verbose_name="نویسنده", on_delete=models.CASCADE)
-    group = models.ForeignKey("group",verbose_name="دسته بندی", on_delete=models.PROTECT)
-    title = models.CharField(verbose_name="عنوان",max_length=20)
+        verbose_name = "آگهی"
+        verbose_name_plural = "آگهی ها"
+
+    author = models.ForeignKey(profile, verbose_name="نویسنده", on_delete=models.CASCADE)
+    group = models.ForeignKey("group", verbose_name="دسته بندی", on_delete=models.PROTECT)
+    title = models.CharField(verbose_name="عنوان", max_length=60)
     description = models.TextField(verbose_name="توضیحات")
     create_time = jmodels.jDateTimeField(auto_now_add=True)
     update_time = jmodels.jDateTimeField(auto_now=True)
-    city = models.ForeignKey("citymodel",verbose_name="شهر", on_delete=models.DO_NOTHING, related_name="content_city", null=True)
-    valid = models.BooleanField(blank=True,verbose_name="تایید شدن", null=True, choices=valid_choices)
-    phonenumber = models.CharField(verbose_name="شماره تماس",max_length=12)
-    address = models.TextField(verbose_name="آدرس",null=True, blank=True)
+    city = models.ForeignKey("citymodel", verbose_name="شهر", on_delete=models.DO_NOTHING, related_name="content_city",
+                             null=True)
+    valid = models.SmallIntegerField(verbose_name="تایید شدن",default=3, choices=valid_choices)
+    phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
+    address = models.TextField(verbose_name="آدرس", null=True, blank=True)
     NOTSHOW = models.BooleanField(default=False)
 
     def approved_comments(self):
@@ -111,6 +115,7 @@ class base_content(models.Model):
     # todo share post
     def get_main_pic(self):
         return self.modelAlbum.get_main_image()
+
 
     def get_date(self):
         year = self.create_time.date().year
@@ -129,6 +134,22 @@ class base_content(models.Model):
 
     def get_like(self, user_id):
         return self.likes.filter(user_connect_id=user_id)
+
+    @property
+    def status(self):
+        return dict(self.valid_choices).get(self.valid)
+
+    @property
+    def view(self):
+        return self.log_content.filter(action=1).count()
+
+    view.fget.short_description = "تعداد بازدید"
+
+    @property
+    def call(self):
+        return self.log_content.filter(action=2).count()
+
+    call.fget.short_description = "تعداد تماس"
 
     @property
     def get_album(self):
@@ -180,9 +201,10 @@ class base_content(models.Model):
 
 class citymodel(models.Model):
     class Meta:
-        verbose_name="شهر"
-        verbose_name_plural="شهر"
-    city_name = models.CharField(verbose_name="نام شهر",max_length=20)
+        verbose_name = "شهر"
+        verbose_name_plural = "شهر"
+
+    city_name = models.CharField(verbose_name="نام شهر", max_length=20)
 
     def __str__(self):
         return self.city_name
@@ -211,10 +233,13 @@ class Comment(models.Model):
 
 class bookmark(models.Model):
     class Meta:
-        verbose_name="علاقه مندی ها"
-        verbose_name_plural="علاقه مندی"
-    content_connect = models.ForeignKey(base_content,verbose_name="آگهی", related_name="post_bookmark", on_delete=models.CASCADE)
-    user_connect = models.ForeignKey(profile, verbose_name="پروفایل کاربر",on_delete=models.CASCADE, related_name="profile_bookmarks")
+        verbose_name = "علاقه مندی ها"
+        verbose_name_plural = "علاقه مندی"
+
+    content_connect = models.ForeignKey(base_content, verbose_name="آگهی", related_name="post_bookmark",
+                                        on_delete=models.CASCADE)
+    user_connect = models.ForeignKey(profile, verbose_name="پروفایل کاربر", on_delete=models.CASCADE,
+                                     related_name="profile_bookmarks")
 
     def __str__(self):
         return f"{self.content_connect}-{self.user_connect}"
@@ -222,10 +247,12 @@ class bookmark(models.Model):
 
 class like(models.Model):
     class Meta:
-            verbose_name = "لایک ها"
-            verbose_name_plural = "لایک"
-    content_connect = models.ForeignKey(base_content,verbose_name="آگهی",related_name="likes", on_delete=models.CASCADE)
-    user_connect = models.ForeignKey(profile,verbose_name="پروفایل کاربر", on_delete=models.CASCADE)
+        verbose_name = "لایک ها"
+        verbose_name_plural = "لایک"
+
+    content_connect = models.ForeignKey(base_content, verbose_name="آگهی", related_name="likes",
+                                        on_delete=models.CASCADE)
+    user_connect = models.ForeignKey(profile, verbose_name="پروفایل کاربر", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.content_connect}-{self.user_connect}"
@@ -258,13 +285,16 @@ class employment(base_content):
 
 class group(models.Model):
     class Meta:
-        verbose_name:"گروه"
-        verbose_name_plural="گروه"
-    parent = models.ForeignKey("self",verbose_name="دسته بندی والد", null=True, blank=True, on_delete=models.CASCADE, related_name="child")
-    category_title = models.CharField(verbose_name="عنوان دسته بندی",max_length=50, unique=True, blank=False, null=False)
+        verbose_name: "گروه"
+        verbose_name_plural = "گروه"
+
+    parent = models.ForeignKey("self", verbose_name="دسته بندی والد", null=True, blank=True, on_delete=models.CASCADE,
+                               related_name="child")
+    category_title = models.CharField(verbose_name="عنوان دسته بندی", max_length=50, unique=True, blank=False,
+                                      null=False)
     id = models.AutoField(primary_key=True)
-    image = models.ImageField(verbose_name="تصویر دسته بندی",upload_to="category_images")
-    slider=models.BooleanField(verbose_name="قابلیت اسلایدر",default=False)
+    image = models.ImageField(verbose_name="تصویر دسته بندی", upload_to="category_images")
+    slider = models.BooleanField(verbose_name="قابلیت اسلایدر", default=False)
 
     def __str__(self):
         return ' {} ({})'.format(self.category_title, self.id)
@@ -328,8 +358,9 @@ class tariff(models.Model):
 #     album = models.OneToOneField(ImageAlbum, related_name='model', on_delete=models.CASCADE)
 class ImageAlbum(models.Model):
     class Meta:
-        verbose_name="آلبوم"
-        verbose_name_plural="آلبوم"
+        verbose_name = "آلبوم"
+        verbose_name_plural = "آلبوم"
+
     album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.CASCADE, null=True,
                                  editable=False)
 

@@ -156,13 +156,13 @@ class forgotpass(APIView):
                     user.save()
                     content = {
                         "message": "پسورد با موفقیت تغییر پیدا کرد",
-                        "success": True
+                        "status": True
                     }
                     return Response(content, status=status.HTTP_200_OK)
                 else:
                     content = {
                         "message": "کد اشتباه وارد شده است",
-                        "success": False
+                        "status": False
                     }
                     return Response(content, status=status.HTTP_403_FORBIDDEN)
         else:
@@ -185,6 +185,7 @@ class sendsms(APIView):
                         # Todo karbar nabod chi???
                         content = {
                             "message": "کاربر یافت نشد",
+                            "status" : False
                         }
                         return Response(content, status=status.HTTP_200_OK)
                     else:

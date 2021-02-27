@@ -8,13 +8,13 @@ from content.models import *
 # admin.site.register(tariff)
 # admin.site.register(city_prob)
 
-admin.site.register(Image)
+# admin.site.register(Image)
 # admin.site.register(employment)
 # admin.site.register(platform)
 # admin.site.register(Comment)
-admin.site.register(like)
+# admin.site.register(like)
 admin.site.register(citymodel)
-admin.site.register(bookmark)
+# admin.site.register(bookmark)
 
 # admin.site.register(sub_group)
 # def make_published(modeladmin, request, queryset):
@@ -25,8 +25,16 @@ class albumInline(admin.TabularInline):
 class ImageInline(admin.TabularInline):
     model=Image
 class base_contentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'valid',"group"]
+    list_display = ['title', 'valid',"group","view","call","get_Image"]
     ordering = ['valid']
+    # readonly_fields = ['get_Image']
+    # #
+    # def get_Image(self, ImageAlbum):
+    #     d=[]
+    #     a=ImageAlbum.modelAlbum.imagesA.all()
+    #     for i in a:
+    #         d.append(i.image.url)
+
     inlines = [
         albumInline,
     ]
@@ -34,6 +42,7 @@ class albumadmin(admin.ModelAdmin):
     inlines = [
         ImageInline,
     ]
+
     # actions = [make_published]
 admin.site.register(base_content, base_contentAdmin)
 admin.site.register(ImageAlbum,albumadmin)

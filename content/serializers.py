@@ -80,15 +80,16 @@ class contentserializers(serializers.ModelSerializer):
     number_of_likes = serializers.ReadOnlyField()
     liked = serializers.SerializerMethodField()
     bookmarked = serializers.SerializerMethodField()
-    content_city=serializers.ReadOnlyField()
+    content_city = serializers.ReadOnlyField()
+    status = serializers.ReadOnlyField()
 
     class Meta:
         model = base_content
-        exclude = ('create_time', 'update_time')
+        exclude = ("valid", 'create_time', 'update_time')
         # read_only_fields = ()
         extra_kwargs = {
             'author': {'read_only': True},
-            "city" : {'write_only' : True}
+            "city": {'write_only': True}
 
         }
 
@@ -129,15 +130,16 @@ class contentserializers(serializers.ModelSerializer):
         # Result.update({"TOP": TOP})
         return ret
 
-
         # def get_tax_status_all(self, obj):  # "get_" + field name
         #     return obj.tax_status(check_item_bought=False)
         # todo use this to check if name is None or not
+
+
 class getcontentserializer(serializers.Serializer):
-    city=serializers.IntegerField(required=True)
-    skip=serializers.IntegerField(required=True)
-    search=serializers.CharField(required=False)
-    group=serializers.IntegerField(required=True)
+    city = serializers.IntegerField(required=True)
+    skip = serializers.IntegerField(required=True)
+    search = serializers.CharField(required=False)
+    group = serializers.IntegerField(required=True)
     # artist_name = serializers.SerializerMethodField('get_artists_name')
     #
     # def get_artists_name(self, obj):
@@ -201,6 +203,7 @@ class commentserializers(serializers.ModelSerializer):
         model = Comment
         fields = ('author', 'text', "blogpost_connected")
 
+
 # class subgrouoserializers(serializers.ModelSerializer):
 #     class Meta:
 #         model = sub_group
@@ -215,8 +218,6 @@ class commentserializers(serializers.ModelSerializer):
 #             self.instance.avatar.delete()
 #         return super().save(*args, **kwargs)
 class cityserializers(serializers.ModelSerializer):
-
     class Meta:
         model = citymodel
         fields = "__all__"
-
