@@ -20,32 +20,52 @@ admin.site.register(citymodel)
 # def make_published(modeladmin, request, queryset):
 #     queryset.update(status='p')
 # make_published.short_description = "Mark selected stories as published"
-class albumInline(admin.TabularInline):
+from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
+
+
+class ImageInline(NestedTabularInline):
+    model = Image
+    extra = 1
+    # readonly_fields = ['mainpic']
+
+class albumInlineInline(NestedTabularInline):
     model = ImageAlbum
-class ImageInline(admin.TabularInline):
-    model=Image
-class base_contentAdmin(admin.ModelAdmin):
-    list_display = ['title', 'valid',"group","view","call","get_Image"]
-    ordering = ['valid']
-    # readonly_fields = ['get_Image']
-    # #
-    # def get_Image(self, ImageAlbum):
-    #     d=[]
-    #     a=ImageAlbum.modelAlbum.imagesA.all()
-    #     for i in a:
-    #         d.append(i.image.url)
+    extra = 1
+    inlines = [ImageInline, ]
 
-    inlines = [
-        albumInline,
-    ]
-class albumadmin(admin.ModelAdmin):
-    inlines = [
-        ImageInline,
-    ]
+class basecontentAdmin(NestedModelAdmin):
+    inlines = [albumInlineInline, ]
+    list_display = ['title', 'valid', "group", "view", "call"]
+    ordering = ['valid',"-create_time"]
 
-    # actions = [make_published]
-admin.site.register(base_content, base_contentAdmin)
-admin.site.register(ImageAlbum,albumadmin)
+
+admin.site.register(base_content, basecontentAdmin)
+# class albumInline(admin.TabularInline):
+#     model = ImageAlbum
+# class ImageInline(admin.TabularInline):
+#     model=Image
+# class base_contentAdmin(admin.ModelAdmin):
+#     list_display = ['title', 'valid',"group","view","call","get_Image"]
+#     ordering = ['valid']
+#     # readonly_fields = ['get_Image']
+#     # #
+#     # def get_Image(self, ImageAlbum):
+#     #     d=[]
+#     #     a=ImageAlbum.modelAlbum.imagesA.all()
+#     #     for i in a:
+#     #         d.append(i.image.url)
+#
+#     inlines = [
+#         albumInline,
+#     ]
+# class albumadmin(admin.ModelAdmin):
+#     inlines = [
+#         ImageInline,
+#     ]
+#
+#     # actions = [make_published]
+# admin.site.register(base_content, base_contentAdmin)
+# admin.site.register(ImageAlbum,albumadmin)
 
 
 # @admin.register(Comment)

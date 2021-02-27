@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path,include
@@ -25,6 +26,7 @@ urlpatterns = [
     path("accounts/",include("accounts.urls"),name="accounts"),
     path("contents/", include("content.urls"), name="content"),
     path("log/",include("Log.urls")),
+    url(r'^nested_admin/', include('nested_admin.urls')),
 
 
 # http post http://127.0.0.1:8000/api-token-auth/ username=vitor password=123

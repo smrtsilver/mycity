@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     "content.apps.ContentConfig",
-    "django_jalali"
+    "django_jalali",
+    "nested_admin"
 
 ]
 
