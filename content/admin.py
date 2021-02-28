@@ -1,6 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
+from django.utils.html import format_html
+
 from content.models import *
 
 # admin.site.register(base_content)
@@ -13,7 +15,6 @@ from content.models import *
 # admin.site.register(platform)
 # admin.site.register(Comment)
 # admin.site.register(like)
-admin.site.register(citymodel)
 # admin.site.register(bookmark)
 
 # admin.site.register(sub_group)
@@ -26,7 +27,14 @@ from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTab
 class ImageInline(NestedTabularInline):
     model = Image
     extra = 1
+    fields = ('image',"image_tag","mainpic",)
+    readonly_fields = ('image_tag',)
+    radio_fields = {'mainpic': admin.VERTICAL}
     # readonly_fields = ['mainpic']
+    def image_tag(self, obj):
+        return format_html('<img src="{}" width="150" height="150"/>'.format(obj.image.url))
+
+    image_tag.short_description = 'Image'
 
 class albumInlineInline(NestedTabularInline):
     model = ImageAlbum

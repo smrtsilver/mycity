@@ -1,7 +1,10 @@
+import os
+
 import jdatetime
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import post_save, pre_save
+from django.db.models import ProtectedError
+from django.db.models.signals import post_save, pre_save, post_delete, pre_delete
 from django.dispatch import receiver
 
 from accounts.models import profile
@@ -13,6 +16,7 @@ from django_jalali.db import models as jmodels
 
 #
 from content.utils import compress
+from nowshahrman.settings import MEDIA_ROOT
 
 
 def get_upload_path(instance, filename):
@@ -21,6 +25,8 @@ def get_upload_path(instance, filename):
     month = instance.album.album.create_time.date().month
     albumid = instance.album.id
     return f'{year}-{month}/{albumid}/{filename}'
+    # PATH=os.path.join(MEDIA_ROOT,f'{year}-{month}/{albumid}/{filename}')
+    # return PATH
 
 
 # def get_album_name(instance,):
@@ -43,36 +49,122 @@ class Image(models.Model):
     image = models.ImageField(verbose_name="تصویر", upload_to=get_upload_path, default="no-image.png")
     album = models.ForeignKey("ImageAlbum", verbose_name="آلبوم", related_name="imagesA", on_delete=models.CASCADE)
     mainpic = models.BooleanField(verbose_name="تصویر اصلی", default=False)
-
+    create_time = jmodels.jDateTimeField(auto_now_add=True)
     def __str__(self):
         return str(self.album.id)
 
-    def save(self, *args, **kwargs):
-        if self.mainpic:
-            try:
-                temp = Image.objects.get(mainpic=True)
-                if self != temp:
-                    temp.mainpic = False
-                    temp.save()
-            except Image.DoesNotExist:
+@receiver(pre_save, sender=Image)
+def pre_save_image(sender, instance, **kwargs):
+    if not instance._state.adding:
+        pass
+    else:
+        new_image = compress(instance.image)
+        instance.image = new_image
+
+
+@receiver(pre_delete,sender=Image)
+def postdelete_mainpic(sender, instance, **kwargs):
+    if instance.mainpic:
+            temp1=Image.objects.filter(mainpic=False).order_by("create_time")
+            if temp1.count()!=0:
+                temp1[0].mainpic=True
+                temp1[0].save()
+            else:
                 pass
-        new_image = compress(self.image)
-        self.image = new_image
-        super().save(*args, **kwargs)
-        # super(Image, self).save(*args, **kwargs)
-        # instance = super(Image, self).save(*args, **kwargs)
-        # image = Image.open(instance.photo.path)
-        # image.save(instance.photo.path, quality=50, optimize=True)
-        # return instance
-        # else:
-        #
-        #     try:
-        #         temp= Image.objects.get(mainpic=True)
-        #
-        #     except:
-        #
-        #         self.mainpic = True
-        #         self.save()
+    else:
+        pass
+
+
+@receiver(post_save, sender=Image)
+def postsave_mainpic(sender, instance, **kwargs):
+    temp = Image.objects.filter(mainpic=True)
+    tempc = Image.objects.filter(mainpic=True).count()
+    if instance in temp:
+        for i in temp:
+            if i != instance:
+                i.mainpic = False
+                i.save()
+    else:
+        if tempc == 0:
+            instance.mainpic = True
+            instance.save()
+
+    #     if
+    #
+    #     if instance.mainpic:
+    #         pass
+    #     else:
+    #         instance.mainpic=True
+    #         instance.save()
+    # else:
+    #     if instance.mainpic:
+    #         if instance != temp:
+    #             temp.mainpic = False
+    #             temp.save()
+    #         else:
+    #             pass
+    #     else:
+    #         pass
+    #
+
+    # if not instance._state.adding:
+    #     if instance.mainpic:
+    #         try:
+    #             # check kon darim?
+    #             temp = Image.objects.get(mainpic=True)
+    #         except Image.DoesNotExist:
+    #             # age nadarim
+    #             pass
+    #         else:
+    #             if instance != temp:
+    #                 temp.mainpic = False
+    #                 temp.save()
+    #             else:
+    #                pass
+    #     else:
+    #         try:
+    #             # check kon darim?
+    #             temp = Image.objects.get(mainpic=True)
+    #         except Image.DoesNotExist:
+    #             instance.mainpic=True
+    #         else:
+    #             if instance == temp:
+    #                 instance.mainpic=True
+    #                 # temp.mainpic = True
+    #                 # temp.save()
+    #
+
+    # def save(self, *args, **kwargs):
+    #     if self.mainpic:
+    #         try:
+    #             temp = Image.objects.get(mainpic=True)
+    #             if self != temp:
+    #                 temp.mainpic = False
+    #                 temp.save()
+    #         except Image.DoesNotExist:
+    #             new_image = compress(self.image)
+    #             self.image = new_image
+    #             super().save(*args, **kwargs)
+    #         else:
+    #             self.
+
+    # new_image = compress(self.image)
+    # self.image = new_image
+    # super().save(*args, **kwargs)
+    # super(Image, self).save(*args, **kwargs)
+    # instance = super(Image, self).save(*args, **kwargs)
+    # image = Image.open(instance.photo.path)
+    # image.save(instance.photo.path, quality=50, optimize=True)
+    # return instance
+    # else:
+    #
+    #     try:
+    #         temp= Image.objects.get(mainpic=True)
+    #
+    #     except:
+    #
+    #         self.mainpic = True
+    #         self.save()
 
     # content_connect = models.ForeignKey("content", related_name='images', on_delete=models.CASCADE)
     # name = models.CharField(max_length=255)
@@ -100,7 +192,7 @@ class base_content(models.Model):
     update_time = jmodels.jDateTimeField(auto_now=True)
     city = models.ForeignKey("citymodel", verbose_name="شهر", on_delete=models.DO_NOTHING, related_name="content_city",
                              null=True)
-    valid = models.SmallIntegerField(verbose_name="تایید شدن",default=3, choices=valid_choices)
+    valid = models.SmallIntegerField(verbose_name="تایید شدن", default=3, choices=valid_choices)
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
     NOTSHOW = models.BooleanField(default=False)
@@ -115,7 +207,6 @@ class base_content(models.Model):
     # todo share post
     def get_main_pic(self):
         return self.modelAlbum.get_main_image()
-
 
     def get_date(self):
         year = self.create_time.date().year
