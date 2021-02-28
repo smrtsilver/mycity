@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
+from django.db.models import Count
 from django.utils.html import format_html
 
 from content.models import *
@@ -16,6 +17,7 @@ from content.models import *
 # admin.site.register(Comment)
 # admin.site.register(like)
 # admin.site.register(bookmark)
+admin.site.register(citymodel)
 
 # admin.site.register(sub_group)
 # def make_published(modeladmin, request, queryset):
@@ -33,8 +35,7 @@ class ImageInline(NestedTabularInline):
     # readonly_fields = ['mainpic']
     def image_tag(self, obj):
         return format_html('<img src="{}" width="150" height="150"/>'.format(obj.image.url))
-
-    image_tag.short_description = 'Image'
+    image_tag.short_description = 'تصویر'
 
 class albumInlineInline(NestedTabularInline):
     model = ImageAlbum
@@ -45,6 +46,28 @@ class basecontentAdmin(NestedModelAdmin):
     inlines = [albumInlineInline, ]
     list_display = ['title', 'valid', "group", "view", "call"]
     ordering = ['valid',"-create_time"]
+
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #     queryset = queryset.annotate(
+    #         _hero_count=Count(self.log_content, distinct=True),
+    #         # _villain_count=Count("view", distinct=True),
+
+    #     )
+    #     return queryset
+    #
+    # def hero_count(self, obj):
+    #     return obj.call
+    #
+    # def villain_count(self, obj):
+    #     return obj.view
+    #
+    # hero_count.admin_order_field = '_hero_count'
+    # villain_count.admin_order_field = '_villain_count'
+    # def call(self, obj):
+    #     return obj.call
+    #
+    # call.admin_order_field = 'call'
 
 
 admin.site.register(base_content, basecontentAdmin)

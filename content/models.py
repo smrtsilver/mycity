@@ -50,8 +50,10 @@ class Image(models.Model):
     album = models.ForeignKey("ImageAlbum", verbose_name="آلبوم", related_name="imagesA", on_delete=models.CASCADE)
     mainpic = models.BooleanField(verbose_name="تصویر اصلی", default=False)
     create_time = jmodels.jDateTimeField(auto_now_add=True)
+
     def __str__(self):
         return str(self.album.id)
+
 
 @receiver(pre_save, sender=Image)
 def pre_save_image(sender, instance, **kwargs):
@@ -62,15 +64,15 @@ def pre_save_image(sender, instance, **kwargs):
         instance.image = new_image
 
 
-@receiver(pre_delete,sender=Image)
+@receiver(pre_delete, sender=Image)
 def postdelete_mainpic(sender, instance, **kwargs):
     if instance.mainpic:
-            temp1=Image.objects.filter(mainpic=False).order_by("create_time")
-            if temp1.count()!=0:
-                temp1[0].mainpic=True
-                temp1[0].save()
-            else:
-                pass
+        temp1 = Image.objects.filter(mainpic=False).order_by("create_time")
+        if temp1.count() != 0:
+            temp1[0].mainpic = True
+            temp1[0].save()
+        else:
+            pass
     else:
         pass
 
