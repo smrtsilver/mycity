@@ -46,6 +46,19 @@ class basecontentAdmin(NestedModelAdmin):
     inlines = [albumInlineInline, ]
     list_display = ['title', 'valid', "group", "view", "call"]
     ordering = ['valid',"-create_time"]
+    list_filter = ("valid","group")
+
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #     queryset = queryset.annotate(
+    #         call=Count('call')
+    #     )
+    #     return queryset
+    #
+    # def get_device_number(self, obj):
+    #     return obj.call
+    #
+    # get_device_number.admin_order_field = 'call'
 
     # def get_queryset(self, request):
     #     queryset = super().get_queryset(request)

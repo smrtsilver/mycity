@@ -34,3 +34,6 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
+admin.site.site_header = "پنل مدیریت شهر من"
+admin.site.site_title = "مدیریت شهر من"
+admin.site.index_title = "به درگاه مدیریت اپلیکیشن شهر من خوش آمدید"
