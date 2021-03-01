@@ -23,6 +23,6 @@ class logactionserializers(serializers.ModelSerializer):
         if user.is_anonymous:
             return obj
         else:
-            obj.user_connect=user
+            obj.user_connect=user.userprofile
             obj.save()
             return obj

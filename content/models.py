@@ -46,7 +46,7 @@ class Image(models.Model):
         verbose_name = "عکس"
         verbose_name_plural = "عکس"
 
-    image = models.ImageField(verbose_name="تصویر", upload_to=get_upload_path, default="no-image.png")
+    image = models.ImageField(verbose_name="تصویر", upload_to=get_upload_path)
     album = models.ForeignKey("ImageAlbum", verbose_name="آلبوم", related_name="imagesA", on_delete=models.CASCADE)
     mainpic = models.BooleanField(verbose_name="تصویر اصلی", default=False)
     create_time = jmodels.jDateTimeField(auto_now_add=True)
@@ -454,7 +454,7 @@ class ImageAlbum(models.Model):
         verbose_name = "آلبوم"
         verbose_name_plural = "آلبوم"
 
-    album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.CASCADE, null=True,
+    album = models.OneToOneField("base_content", related_name='modelAlbum', on_delete=models.CASCADE,
                                  editable=False)
 
     # class Meta:

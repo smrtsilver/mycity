@@ -22,7 +22,7 @@ from django.urls import path,include
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', admin.site.urls),
     path("accounts/",include("accounts.urls"),name="accounts"),
     path("contents/", include("content.urls"), name="content"),
     path("log/",include("Log.urls")),
@@ -31,9 +31,9 @@ urlpatterns = [
 
 # http post http://127.0.0.1:8000/api-token-auth/ username=vitor password=123
 ]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL,
+
+urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
 admin.site.site_header = "پنل مدیریت شهر من"
 admin.site.site_title = "مدیریت شهر من"
-admin.site.index_title = "به درگاه مدیریت اپلیکیشن شهر من خوش آمدید"
+admin.site.index_title = "به درگاه مدیریت {} خوش آمدید".format("'اپلیکیشن شهر من'")

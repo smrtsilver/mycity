@@ -1,29 +1,24 @@
 from django.contrib import admin
-
-# Register your models here.
 from django.db.models import Count
 from django.utils.html import format_html
-
 from content.models import *
+from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
 # admin.site.register(base_content)
-# admin.site.register(group)
+admin.site.register(group)
 # admin.site.register(tariff)
 # admin.site.register(city_prob)
-
 # admin.site.register(Image)
 # admin.site.register(employment)
 # admin.site.register(platform)
 # admin.site.register(Comment)
 # admin.site.register(like)
 # admin.site.register(bookmark)
-admin.site.register(citymodel)
-
 # admin.site.register(sub_group)
 # def make_published(modeladmin, request, queryset):
 #     queryset.update(status='p')
 # make_published.short_description = "Mark selected stories as published"
-from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
+admin.site.register(citymodel)
 
 
 class ImageInline(NestedTabularInline):
@@ -42,11 +37,51 @@ class albumInlineInline(NestedTabularInline):
     extra = 1
     inlines = [ImageInline, ]
 
+    def has_delete_permission(self, request, obj=None):
+        return False
 class basecontentAdmin(NestedModelAdmin):
+    # class Media:
+    #     css = {
+    #         'all': ('/static/admin/css/extracss.css',)
+    #     }
     inlines = [albumInlineInline, ]
     list_display = ['title', 'valid', "group", "view", "call"]
+    exclude = ("NOTSHOW","author")
     ordering = ['valid',"-create_time"]
     list_filter = ("valid","group")
+    list_filter = (
+        'author',
+         "valid",
+        "group"
+    )
+    readonly_fields = [
+        'createtime',
+    ]
+    #
+    # def get_call(self, obj):
+    #     return obj.log_content.filter(action=1).count()
+    # get_call.admin_order_field = 'log_content'
+    # def get_view(self, obj):
+    #     return obj.log_content.filter(action=2).count()
+    # get_view.admin_order_field = 'log_content'
+
+    def createtime(self,obj):
+        time=obj.get_time()
+        date=obj.get_date()
+        return f"{date}  {time}"
+    createtime.short_description = "زمان ثبت"
+
+    def save_model(self, request, obj, form, change):
+        if getattr(obj, 'user', None) is None:
+            obj.author = request.user.userprofile
+        obj.save()
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(author=request.user.userprofile)
 
     # def get_queryset(self, request):
     #     queryset = super().get_queryset(request)
@@ -81,7 +116,6 @@ class basecontentAdmin(NestedModelAdmin):
     #     return obj.call
     #
     # call.admin_order_field = 'call'
-
 
 admin.site.register(base_content, basecontentAdmin)
 # class albumInline(admin.TabularInline):
