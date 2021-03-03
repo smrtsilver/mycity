@@ -1,6 +1,9 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin import DateFieldListFilter
 from django.db.models import Count
 from django.utils.html import format_html
+from django.utils.translation import ngettext
+
 from content.models import *
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
@@ -24,13 +27,16 @@ admin.site.register(citymodel)
 class ImageInline(NestedTabularInline):
     model = Image
     extra = 1
-    fields = ('image',"image_tag","mainpic",)
+    fields = ('image', "image_tag", "mainpic",)
     readonly_fields = ('image_tag',)
     radio_fields = {'mainpic': admin.VERTICAL}
+
     # readonly_fields = ['mainpic']
     def image_tag(self, obj):
         return format_html('<img src="{}" width="150" height="150"/>'.format(obj.image.url))
+
     image_tag.short_description = 'تصویر'
+
 
 class albumInlineInline(NestedTabularInline):
     model = ImageAlbum
@@ -39,6 +45,8 @@ class albumInlineInline(NestedTabularInline):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
 class basecontentAdmin(NestedModelAdmin):
     # class Media:
     #     css = {
@@ -46,22 +54,52 @@ class basecontentAdmin(NestedModelAdmin):
     #     }
     inlines = [albumInlineInline, ]
     list_display = ['title', 'valid', "group", "view", "call"]
-    exclude = ("NOTSHOW","author")
-    ordering = ['valid',"-create_time"]
+    exclude = ("NOTSHOW", "author")
+    ordering = ['valid', "-create_time"]
     # list_filter = ("valid","group")
     list_filter = [
         "city",
+        # ('create_time', DateFieldListFilter)
     ]
+    # actions = ['']
+
+    # actions = ["delete_model"]
+
+    def delete_queryset(self, request, queryset):
+        n = queryset.count()
+        if n:
+            for obj in queryset:
+                obj.NOTSHOW = True
+                obj.save()
+                # messages.SUCCESS(request,"hhhhhhhh")
+            # self.message_user(request, ngettext(
+            #     '%d story was successfully marked as published.',
+            #     '%d stories were successfully marked as published.',
+            #     n,
+            # ) % n, messages.SUCCESS)
+            # self.message_user(request, (f"تعداد {n} آگهی حذف شدند"), messages.SUCCESS)
+
+    def delete_model(modeladmin, request, queryset):
+        # from collections.abc import Iterable
+        # if isinstance(queryset, Iterable):
+        #     for obj in queryset:
+        #         obj.NOTSHOW=True
+        #         obj.save()
+        # else:
+        queryset.NOTSHOW = True
+        queryset.save()
 
     def changelist_view(self, request, extra_context=None):
         if request.user.is_superuser:
-            self.list_filter=[
-                    "city",
-                        ]
+            self.list_filter = [
+                "city",
+                # ('create_time', DateFieldListFilter)
+            ]
             self.list_filter.extend(["valid"])
             self.list_filter.extend(["group"])
 
         return super(basecontentAdmin, self).changelist_view(request, extra_context)
+
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         is_superuser = request.user.is_superuser
@@ -79,10 +117,11 @@ class basecontentAdmin(NestedModelAdmin):
         'createtime',
     ]
 
-    def createtime(self,obj):
-        time=obj.get_time()
-        date=obj.get_date()
+    def createtime(self, obj):
+        time = obj.get_time()
+        date = obj.get_date()
         return f"{date}  {time}"
+
     createtime.short_description = "زمان ثبت"
 
     def save_model(self, request, obj, form, change):
@@ -94,8 +133,8 @@ class basecontentAdmin(NestedModelAdmin):
         qs = super().get_queryset(request)
         queryset = super().get_queryset(request)
         if request.user.is_superuser:
-            return qs
-        return qs.filter(author=request.user.userprofile)
+            return qs.exclude(NOTSHOW=True)
+        return qs.filter(author=request.user.userprofile).exclude(NOTSHOW=True)
 
     # def get_queryset(self, request):
     #     queryset = super().get_queryset(request)
@@ -130,6 +169,7 @@ class basecontentAdmin(NestedModelAdmin):
     #     return obj.call
     #
     # call.admin_order_field = 'call'
+
 
 admin.site.register(base_content, basecontentAdmin)
 # class albumInline(admin.TabularInline):

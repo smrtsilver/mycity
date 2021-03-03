@@ -3,7 +3,7 @@ from django.apps import AppConfig
 
 class AccountsConfig(AppConfig):
     name = 'accounts'
-    verbose_name="کاربران"
+    verbose_name="مدیریت کاربران"
 
 
     def ready(self):

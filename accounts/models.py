@@ -20,8 +20,8 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class profile(models.Model):
     class Meta:
-        verbose_name="کاربر"
-        verbose_name_plural="کاربر"
+        verbose_name="پروفایل کاربر"
+        verbose_name_plural="پروفایل کاربر"
     #Todo folderbandi
     profile_image=models.ImageField(verbose_name="تصویر کاربر",upload_to=get_upload_path,default="1.jpg")
     user = models.OneToOneField(User, verbose_name="اکانت کاربر",on_delete=models.CASCADE,related_name="userprofile")
