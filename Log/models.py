@@ -33,4 +33,4 @@ class VersionModel(models.Model):
     # url=models.URLField()
 
     def __str__(self):
-        return self.versionCode
+        return str(self.versionCode)

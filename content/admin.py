@@ -8,7 +8,7 @@ from content.models import *
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
 # admin.site.register(base_content)
-# admin.site.register(group)
+admin.site.register(group)
 # admin.site.register(tariff)
 # admin.site.register(city_prob)
 # admin.site.register(Image)
@@ -47,6 +47,29 @@ class albumInlineInline(NestedTabularInline):
         return False
 
 
+class validfilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = ('بر اساس وضعیت')
+
+    parameter_name = 'valid'
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, "تایید شده"),
+            (2, "تایید نشده"),
+            (3, "درحال بررسی"),
+
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "1":
+            return queryset.filter(valid__exact=1)
+        elif self.value() == "2":
+            return queryset.filter(valid__exact=2)
+        elif self.value()=="3" :
+            return queryset.filter(valid__exact=3)
+
 class basecontentAdmin(NestedModelAdmin):
     # class Media:
     #     css = {
@@ -54,13 +77,14 @@ class basecontentAdmin(NestedModelAdmin):
     #     }
     inlines = [albumInlineInline, ]
     list_display = ['title', 'valid', "group", "view", "call"]
-    exclude = ("NOTSHOW", "author")
+    exclude = ("author",)
     ordering = ['valid', "-create_time"]
     # list_filter = ("valid","group")
     list_filter = [
-        "city",
+        "city"
         # ('create_time', DateFieldListFilter)
     ]
+
     # actions = ['']
 
     # actions = ["delete_model"]
@@ -69,7 +93,7 @@ class basecontentAdmin(NestedModelAdmin):
         n = queryset.count()
         if n:
             for obj in queryset:
-                obj.NOTSHOW = True
+                obj.valid = 4
                 obj.save()
                 # messages.SUCCESS(request,"hhhhhhhh")
             # self.message_user(request, ngettext(
@@ -78,7 +102,16 @@ class basecontentAdmin(NestedModelAdmin):
             #     n,
             # ) % n, messages.SUCCESS)
             # self.message_user(request, (f"تعداد {n} آگهی حذف شدند"), messages.SUCCESS)
-
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        if db_field.name == 'valid':
+                kwargs['choices'] = (
+                    (1, "تایید شده"),
+                    (2, "تایید نشده"),
+                    (3, "درحال بررسی"),
+                )
+                # if request.user.is_superuser:
+                #     kwargs['choices'] += (('ready', 'Ready for deployment'),)
+        return super().formfield_for_choice_field(db_field, request, **kwargs)
     def delete_model(modeladmin, request, queryset):
         # from collections.abc import Iterable
         # if isinstance(queryset, Iterable):
@@ -86,16 +119,16 @@ class basecontentAdmin(NestedModelAdmin):
         #         obj.NOTSHOW=True
         #         obj.save()
         # else:
-        queryset.NOTSHOW = True
+        queryset.valid = 4
         queryset.save()
 
     def changelist_view(self, request, extra_context=None):
         if request.user.is_superuser:
             self.list_filter = [
-                "city",
+                "city"
                 # ('create_time', DateFieldListFilter)
             ]
-            self.list_filter.extend(["valid"])
+            self.list_filter.extend([validfilter])
             self.list_filter.extend(["group"])
 
         return super(basecontentAdmin, self).changelist_view(request, extra_context)
@@ -133,8 +166,8 @@ class basecontentAdmin(NestedModelAdmin):
         qs = super().get_queryset(request)
         queryset = super().get_queryset(request)
         if request.user.is_superuser:
-            return qs.exclude(NOTSHOW=True)
-        return qs.filter(author=request.user.userprofile).exclude(NOTSHOW=True)
+            return qs.exclude(valid=4)
+        return qs.filter(author=request.user.userprofile).exclude(valid=4)
 
     # def get_queryset(self, request):
     #     queryset = super().get_queryset(request)

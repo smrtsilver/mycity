@@ -12,9 +12,6 @@ from django_jalali.db import models as jmodels
 
 # from content.utils import foreingkeylimit
 # from content.utils import find_by_key
-
-
-#
 from content.utils import compress
 from nowshahrman.settings import MEDIA_ROOT
 
@@ -179,7 +176,8 @@ class base_content(models.Model):
     valid_choices = (
         (1, "تایید شده"),
         (2, "تایید نشده"),
-        (3, "درحال بررسی")
+        (3, "درحال بررسی"),
+        (4,"حذف شده")
     )
 
     class Meta:
@@ -193,17 +191,17 @@ class base_content(models.Model):
     create_time = jmodels.jDateTimeField(auto_now_add=True)
     update_time = jmodels.jDateTimeField(auto_now=True)
     city = models.ForeignKey("citymodel", verbose_name="شهر", on_delete=models.DO_NOTHING, related_name="content_city",
-                             null=True)
-    valid = models.SmallIntegerField(verbose_name="تایید شدن", default=3, choices=valid_choices)
+                             )
+    valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
-    NOTSHOW = models.BooleanField(default=False)
+    # NOTSHOW = models.BooleanField(default=False)
 
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
 
     def delete_post(self):
-        self.NOTSHOW = True
+        self.valid = 4
         return True
 
     # todo share post
