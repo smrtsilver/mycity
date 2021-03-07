@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from Log.models import log_action
+from Log.models import log_action, VersionModel
 
 
 class logactionserializers(serializers.ModelSerializer):
@@ -26,3 +26,8 @@ class logactionserializers(serializers.ModelSerializer):
             obj.user_connect=user.userprofile
             obj.save()
             return obj
+
+class statusserializers(serializers.ModelSerializer):
+    class Meta:
+        model=VersionModel
+        fields = ("versionCode",)

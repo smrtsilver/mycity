@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 # Create your views here.
-from Log.serializers import logactionserializers
+from Log.models import VersionModel
+from Log.serializers import logactionserializers, statusserializers
 
 
 class Log_action(APIView):
@@ -18,3 +19,8 @@ class Log_action(APIView):
 class server_status(APIView):
     def post(self,request):
      return Response(status.HTTP_200_OK)
+class get_version(APIView):
+    def get(self,request):
+        obj=VersionModel.objects.filter(status=1).last()
+        ser=statusserializers(obj)
+        return Response(ser.data,status=status.HTTP_200_OK)
