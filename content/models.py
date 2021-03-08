@@ -1,19 +1,18 @@
-import os
-
-import jdatetime
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import ProtectedError
 from django.db.models.signals import post_save, pre_save, post_delete, pre_delete
 from django.dispatch import receiver
-
 from accounts.models import profile
 from django_jalali.db import models as jmodels
+from content.utils import compress
+
 
 # from content.utils import foreingkeylimit
 # from content.utils import find_by_key
-from content.utils import compress
-from nowshahrman.settings import MEDIA_ROOT
+# from django.db.models import ProtectedError
+# from nowshahrman.settings import MEDIA_ROOT
+# import os
+# import jdatetime
 
 
 def get_upload_path(instance, filename):
