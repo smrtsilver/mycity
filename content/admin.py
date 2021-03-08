@@ -8,7 +8,7 @@ from content.models import *
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
 # admin.site.register(base_content)
-admin.site.register(group)
+# admin.site.register(group)
 # admin.site.register(tariff)
 # admin.site.register(city_prob)
 # admin.site.register(Image)
@@ -21,7 +21,7 @@ admin.site.register(group)
 # def make_published(modeladmin, request, queryset):
 #     queryset.update(status='p')
 # make_published.short_description = "Mark selected stories as published"
-admin.site.register(citymodel)
+# admin.site.register(citymodel)
 
 
 class ImageInline(NestedTabularInline):

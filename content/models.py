@@ -26,17 +26,6 @@ def get_upload_path(instance, filename):
     # return PATH
 
 
-# def get_album_name(instance,):
-#     name = instance.modelAlbum.title
-#     # group = instance.modelAlbum.group.category_title
-#     return f"{name}-{group}"
-
-
-# def get_image_filename(instance, filename):
-#     title = instance.post.title
-#     slug = slugify(title)
-#     return "post_images/%s-%s" % (slug, filename)
-
 class Image(models.Model):
     class Meta:
         ordering = ["-mainpic"]
@@ -177,7 +166,7 @@ class base_content(models.Model):
         (1, "تایید شده"),
         (2, "تایید نشده"),
         (3, "درحال بررسی"),
-        (4,"حذف شده")
+        (4, "حذف شده")
     )
 
     class Meta:
@@ -196,6 +185,7 @@ class base_content(models.Model):
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
     valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
+
     # NOTSHOW = models.BooleanField(default=False)
 
     def approved_comments(self):
@@ -353,28 +343,27 @@ class like(models.Model):
         self.delete()
 
 
-class city_prob(base_content):
-    district = models.CharField(max_length=20)
-
-    # group = models.ForeignKey("group", on_delete=models.CASCADE, limit_choices_to={"category_title":"مشکلات شهری"})
-    def create_instance(self):
-        pass
-
-
-class news(models.Model):
-    pass
+# TODO
+# class city_prob(base_content):
+#     district = models.CharField(max_length=20)
+#
+#     # group = models.ForeignKey("group", on_delete=models.CASCADE, limit_choices_to={"category_title":"مشکلات شهری"})
+#     def create_instance(self):
+#         pass
 
 
-class realstate(models.Model):
-    pass
+# class news(models.Model):
+#     pass
 
 
-class employment(base_content):
-    salary = models.IntegerField()
-    # address = models.CharField(max_length=100)
-    # bime=models.CharField(max_length=10)
+# class realstate(models.Model):
+#     pass
 
 
+# class employment(base_content):
+#     salary = models.IntegerField()
+#     # address = models.CharField(max_length=100)
+#     # bime=models.CharField(max_length=10)
 class group(models.Model):
     class Meta:
         verbose_name: "گروه"
@@ -414,20 +403,20 @@ class group(models.Model):
 #
 #     def __str__(self):
 #         return ' {} ({})'.format(self.sub_categoryname, self.id)
-class platform(models.Model):
-    name = models.CharField(max_length=20)
+# class platform(models.Model):
+#     name = models.CharField(max_length=20)
+#
+#     def __str__(self):
+#         return self.name
 
-    def __str__(self):
-        return self.name
 
-
-class tariff(models.Model):
-    platform = models.ForeignKey(platform, on_delete=models.CASCADE)
-    description = models.CharField(max_length=100)
-    prize = models.IntegerField()
-
-    def __str__(self):
-        return "{} - {} ".format(self.platform, self.description)
+# class tariff(models.Model):
+#     platform = models.ForeignKey(platform, on_delete=models.CASCADE)
+#     description = models.CharField(max_length=100)
+#     prize = models.IntegerField()
+#
+#     def __str__(self):
+#         return "{} - {} ".format(self.platform, self.description)
 
 
 # class Product(models.Model):
@@ -480,9 +469,10 @@ class ImageAlbum(models.Model):
     def __str__(self):
         return f"{str(self.id)}"
 
-    @receiver(post_save, sender=city_prob)
-    @receiver(post_save, sender=employment)
-    @receiver(post_save, sender=news)
+    # TODO
+    # @receiver(post_save, sender=city_prob)
+    # @receiver(post_save, sender=employment)
+    # @receiver(post_save, sender=news)
     @receiver(post_save, sender=base_content)
     def create_or_update_album(sender, instance, created, **kwargs):
         if created:

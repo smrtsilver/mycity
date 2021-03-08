@@ -22,10 +22,10 @@ from django.db.models import Q
 from content.utils import modify_input_for_multiple_files
 
 
-class get_tariff(APIView):
-    def post(self, request):
-        ser = tariffserializers(tariff.objects.all(), many=True)
-        return Response(ser.data, status=status.HTTP_200_OK)
+# class get_tariff(APIView):
+#     def post(self, request):
+#         ser = tariffserializers(tariff.objects.all(), many=True)
+#         return Response(ser.data, status=status.HTTP_200_OK)
 
 
 class get_group(APIView):
@@ -35,9 +35,9 @@ class get_group(APIView):
 
         if (request.data.get("group") is None) or int(request.data["group"]) == 0:
             ser = groupserializers(group.objects.filter(parent=None), many=True)
-            a=ser.data
+            a = ser.data
             a[0], a[1] = a[1], a[0]
-            a[1],a[2] = a[2],a[1]
+            a[1], a[2] = a[2], a[1]
             return Response(a, status=status.HTTP_200_OK)
         else:
             group_id = request.data.get("group")
@@ -201,13 +201,22 @@ class get_content(APIView):
 
             return Response(ser.errors, status=status.HTTP_200_OK)
 
+
 class get_slider(APIView):
     def post(self, request):
         # todo id group
-        top = 3
-        results = sorted(base_content.objects.all(), key=lambda m: m.number_of_likes, reverse=True)[:top]
-        toplist = topcontentserializers(results, many=True)
-        return Response(toplist.data, status=status.HTTP_200_OK)
+        group_id = request.data.get("group")
+        if group_id:
+            top = 5
+            results = sorted(base_content.objects.filter(group__id=group_id).filter(valid__exact=1),
+                             key=lambda m: m.number_of_likes, reverse=True)[:top]
+            toplist = topcontentserializers(results, many=True)
+            return Response(toplist.data, status=status.HTTP_200_OK)
+        else:
+            context = {
+                "message": "مقدار شماره گروه لازم است"
+            }
+            return Response(context, status=status.HTTP_400_BAD_REQUEST)
 
 
 class comment_remove(APIView):
