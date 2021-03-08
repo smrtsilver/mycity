@@ -8,7 +8,7 @@ from content.models import *
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
 # admin.site.register(base_content)
-# admin.site.register(group)
+admin.site.register(group)
 # admin.site.register(tariff)
 # admin.site.register(city_prob)
 # admin.site.register(Image)
@@ -67,8 +67,9 @@ class validfilter(admin.SimpleListFilter):
             return queryset.filter(valid__exact=1)
         elif self.value() == "2":
             return queryset.filter(valid__exact=2)
-        elif self.value()=="3" :
+        elif self.value() == "3":
             return queryset.filter(valid__exact=3)
+
 
 class basecontentAdmin(NestedModelAdmin):
     # class Media:
@@ -102,16 +103,35 @@ class basecontentAdmin(NestedModelAdmin):
             #     n,
             # ) % n, messages.SUCCESS)
             # self.message_user(request, (f"تعداد {n} آگهی حذف شدند"), messages.SUCCESS)
+
     def formfield_for_choice_field(self, db_field, request, **kwargs):
         if db_field.name == 'valid':
-                kwargs['choices'] = (
-                    (1, "تایید شده"),
-                    (2, "تایید نشده"),
-                    (3, "درحال بررسی"),
-                )
-                # if request.user.is_superuser:
-                #     kwargs['choices'] += (('ready', 'Ready for deployment'),)
+            kwargs['choices'] = (
+                (1, "تایید شده"),
+                (2, "تایید نشده"),
+                (3, "درحال بررسی"),
+            )
+            # if request.user.is_superuser:
+            #     kwargs['choices'] += (('ready', 'Ready for deployment'),)
         return super().formfield_for_choice_field(db_field, request, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if not request.user.is_superuser:
+            groups = [g.id for g in request.user.groups.all()]
+            if db_field.name == "group":
+                if 1 in groups:
+                # cat = request.user.principal.school
+                    kwargs['queryset'] = group.objects.filter(id__exact=1)
+                    # if request.user.groups.filter(id=1).exists():
+                if 2 in groups:
+                    kwargs['queryset'] = group.objects.filter(id__exact=7)
+                    #     form.base_fields["group"].disabled = True
+                    #     form.base_fields['group'].initial = 1
+                    # elif request.user.groups.filter(id=2).exists():
+                    #     form.base_fields["group"].disabled = True
+                    #     form.base_fields['group'].initial = 7
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def delete_model(modeladmin, request, queryset):
         # from collections.abc import Iterable
         # if isinstance(queryset, Iterable):
@@ -139,10 +159,6 @@ class basecontentAdmin(NestedModelAdmin):
         form.base_fields['phonenumber'].initial = request.user.username
         if not is_superuser:
             form.base_fields['phonenumber'].disabled = True
-
-            if request.user.groups.filter(id=1).exists():
-                form.base_fields["group"].disabled = True
-                form.base_fields['group'].initial = 1
 
         return form
 

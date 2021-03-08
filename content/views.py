@@ -35,7 +35,10 @@ class get_group(APIView):
 
         if (request.data.get("group") is None) or int(request.data["group"]) == 0:
             ser = groupserializers(group.objects.filter(parent=None), many=True)
-            return Response(ser.data, status=status.HTTP_200_OK)
+            a=ser.data
+            a[0], a[1] = a[1], a[0]
+            a[1],a[2] = a[2],a[1]
+            return Response(a, status=status.HTTP_200_OK)
         else:
             group_id = request.data.get("group")
             ser = groupserializers(group.objects.filter(parent__id=group_id), many=True)
