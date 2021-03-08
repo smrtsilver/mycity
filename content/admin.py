@@ -8,7 +8,7 @@ from content.models import *
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
 # admin.site.register(base_content)
-admin.site.register(group)
+# admin.site.register(group)
 # admin.site.register(tariff)
 # admin.site.register(city_prob)
 # admin.site.register(Image)

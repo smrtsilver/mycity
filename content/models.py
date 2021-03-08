@@ -192,9 +192,10 @@ class base_content(models.Model):
     update_time = jmodels.jDateTimeField(auto_now=True)
     city = models.ForeignKey("citymodel", verbose_name="شهر", on_delete=models.DO_NOTHING, related_name="content_city",
                              )
-    valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
+
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
+    valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
     # NOTSHOW = models.BooleanField(default=False)
 
     def approved_comments(self):
