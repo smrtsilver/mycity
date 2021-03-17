@@ -45,8 +45,21 @@ class FeedbackModel(models.Model):
              (2,"غیرمفید"))
     description = models.TextField(verbose_name="توضیحات")
     user_connect= models.ForeignKey("accounts.profile",verbose_name="توسط کاربر",on_delete=models.PROTECT)
-    status=models.PositiveSmallIntegerField(verbose_name="وضعیت",choices=choices,null=True)
+    status=models.PositiveSmallIntegerField(verbose_name="وضعیت",choices=choices,null=True,blank=True)
     date_time = jmodels.jDateTimeField(verbose_name="زمان ثبت",auto_now_add=True,editable=False)
 
     def __str__(self):
         return str(self.id)
+
+    def get_date(self):
+        year = self.date_time.date().year
+        day = self.date_time.date().day
+        month = self.date_time.date().month
+        hour = self.date_time.time().hour
+        minute = self.date_time.time().minute
+        second = self.date_time.time().second
+        time=f"{hour}:{minute}:{second}"
+        date=f"{year}/{day}/{month}"
+        return f"{time} - {date}"
+
+
