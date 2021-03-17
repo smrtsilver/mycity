@@ -14,7 +14,6 @@ from content.utils import compress
 # import os
 # import jdatetime
 
-
 def get_upload_path(instance, filename):
     # model = instance.content.__class__._meta
     year = instance.album.album.create_time.date().year
@@ -40,13 +39,14 @@ class Image(models.Model):
         return str(self.album.id)
 
 
+####Todo compress when update
 @receiver(pre_save, sender=Image)
 def pre_save_image(sender, instance, **kwargs):
-    if not instance._state.adding:
-        pass
-    else:
-        new_image = compress(instance.image)
-        instance.image = new_image
+    # if not instance._state.adding:
+    #     pass
+    # else:
+    new_image = compress(instance.image)
+    instance.image = new_image
 
 
 @receiver(pre_delete, sender=Image)
@@ -64,8 +64,8 @@ def postdelete_mainpic(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Image)
 def postsave_mainpic(sender, instance, **kwargs):
-    temp = Image.objects.filter(mainpic=True)
-    tempc = Image.objects.filter(mainpic=True).count()
+    temp = sender.objects.filter(mainpic=True)
+    tempc = sender.objects.filter(mainpic=True).count()
     if instance in temp:
         for i in temp:
             if i != instance:
@@ -178,11 +178,14 @@ class base_content(models.Model):
     description = models.TextField(verbose_name="توضیحات")
     create_time = jmodels.jDateTimeField(auto_now_add=True)
     update_time = jmodels.jDateTimeField(auto_now=True)
-    city = models.ForeignKey("citymodel", verbose_name="شهر", on_delete=models.DO_NOTHING, related_name="content_city",
+    city = models.ForeignKey("citymodel", verbose_name="شهر", on_delete=models.PROTECT,
+                             related_name="content_city",
                              )
 
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
+    tariff = models.ForeignKey("tariffModel", verbose_name="تعرفه",on_delete=models.SET_NULL, null=True, blank=True)
+    expiretime = jmodels.jDateTimeField(blank=True, null=True)
     valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
 
     # NOTSHOW = models.BooleanField(default=False)
@@ -192,6 +195,7 @@ class base_content(models.Model):
 
     def delete_post(self):
         self.valid = 4
+        self.save()
         return True
 
     # todo share post
@@ -402,20 +406,28 @@ class group(models.Model):
 #
 #     def __str__(self):
 #         return ' {} ({})'.format(self.sub_categoryname, self.id)
-# class platform(models.Model):
-#     name = models.CharField(max_length=20)
-#
-#     def __str__(self):
-#         return self.name
+class platformModel(models.Model):
+    class Meta:
+        verbose_name = "پلتفرم"
+        verbose_name_plural = "پلتفرم"
+
+    name = models.CharField(verbose_name="اسم پلتفرم",max_length=20)
+
+    def __str__(self):
+        return self.name
 
 
-# class tariff(models.Model):
-#     platform = models.ForeignKey(platform, on_delete=models.CASCADE)
-#     description = models.CharField(max_length=100)
-#     prize = models.IntegerField()
-#
-#     def __str__(self):
-#         return "{} - {} ".format(self.platform, self.description)
+class tariffModel(models.Model):
+    class Meta:
+        verbose_name="تعرفه"
+        verbose_name_plural="تعرفه"
+
+    platform = models.ForeignKey("platformModel",verbose_name="مربوط به پلتفرم", on_delete=models.CASCADE, related_name="tariff_platform")
+    description = models.CharField(verbose_name="توضیحات",max_length=100)
+    prize = models.PositiveIntegerField(verbose_name="قیمت",)
+
+    def __str__(self):
+        return "{} - {} ".format(self.platform, self.description)
 
 
 # class Product(models.Model):
@@ -480,13 +492,19 @@ class ImageAlbum(models.Model):
         # instance.ImageAlbum.save()
 
 
+# Todo complete this part
 @receiver(pre_save, sender=base_content)
 def do_something_if_changed(sender, instance, **kwargs):
-    try:
-        obj = sender.objects.get(pk=instance.pk)
-    except sender.DoesNotExist:
-        pass  # Object is new, so field hasn't technically changed, but you may want to do something else here.
+    import datetime
+    if not instance._state.adding:
+        obj = sender.objects.get(id__exact=instance.pk)
+        if obj.valid != instance.valid and instance.valid == 1:
+
+            instance.expiretime = jmodels.timezone.now() + datetime.timedelta(seconds=10)
+        else:
+            pass
     else:
-        if not obj.valid == instance.valid:
-            if instance.valid:  # Field has changed
-                print("hi")
+        if instance.valid == 1:
+            instance.expiretime = jmodels.timezone.now() + datetime.timedelta(seconds=10)
+        else:
+            pass
