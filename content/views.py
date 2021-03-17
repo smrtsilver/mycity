@@ -155,6 +155,7 @@ class createcontent(APIView):
         #
         #         return Response(ser.errors, status=status.HTTP_201_CREATED)
 
+
 class get_content(APIView):
     def post(self, request):
         data = request.data
