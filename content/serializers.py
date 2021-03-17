@@ -179,11 +179,11 @@ class groupserializers(serializers.ModelSerializer):
         fields = "__all__"
 
 
-# class tariffserializers(serializers.ModelSerializer):
-#     class Meta:
-#         model = tariff
-#         fields = "__all__"
-#         depth = 1
+class tariffserializers(serializers.ModelSerializer):
+    class Meta:
+        model = tariffModel
+        fields = "__all__"
+        depth = 1
 
 #TODO
 # class cityprobserializers(serializers.ModelSerializer):
