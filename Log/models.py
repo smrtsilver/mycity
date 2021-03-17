@@ -30,7 +30,20 @@ class VersionModel(models.Model):
     versionCode = models.PositiveSmallIntegerField()
     create_time = jmodels.jDateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=choices, default=0)
+
     # url=models.URLField()
 
     def __str__(self):
         return str(self.versionCode)
+
+
+class FeedbackModel(models.Model):
+    choices=((1,"مفید"),
+             (2,"غیرمفید"))
+    description = models.TextField()
+    user_connect= models.ForeignKey("accounts.profile",on_delete=models.PROTECT)
+    status=models.PositiveSmallIntegerField(choices=choices,null=True)
+    date_time = jmodels.jDateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.id)
