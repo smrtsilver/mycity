@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from Log.models import log_action, VersionModel
+from Log.models import log_action, VersionModel, FeedbackModel
 
 
 class logactionserializers(serializers.ModelSerializer):
@@ -26,6 +26,26 @@ class logactionserializers(serializers.ModelSerializer):
             obj.user_connect=user.userprofile
             obj.save()
             return obj
+
+class feedbackserializers(serializers.ModelSerializer):
+
+    class Meta:
+        model=FeedbackModel
+        exclude=("date_time","status")
+
+        extra_kwargs = {
+            'user_connect': {'write_only': True},
+            'description': {'write_only': True},
+        }
+
+    def create(self,validated_data):
+
+        obj=super().create(validated_data)
+        request = self.context.get('request')
+        user = request.user
+        obj.user_connect=user.userprofile
+        obj.save()
+        return obj
 
 class statusserializers(serializers.ModelSerializer):
     class Meta:

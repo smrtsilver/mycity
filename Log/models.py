@@ -38,12 +38,15 @@ class VersionModel(models.Model):
 
 
 class FeedbackModel(models.Model):
+    class Meta:
+        verbose_name="انتقادات و پیشنهادات"
+        verbose_name_plural="انتقادات و پیشنهادات"
     choices=((1,"مفید"),
              (2,"غیرمفید"))
-    description = models.TextField()
-    user_connect= models.ForeignKey("accounts.profile",on_delete=models.PROTECT)
-    status=models.PositiveSmallIntegerField(choices=choices,null=True)
-    date_time = jmodels.jDateTimeField(auto_now_add=True)
+    description = models.TextField(verbose_name="توضیحات")
+    user_connect= models.ForeignKey("accounts.profile",verbose_name="توسط کاربر",on_delete=models.PROTECT)
+    status=models.PositiveSmallIntegerField(verbose_name="وضعیت",choices=choices,null=True)
+    date_time = jmodels.jDateTimeField(verbose_name="زمان ثبت",auto_now_add=True,editable=False)
 
     def __str__(self):
         return str(self.id)

@@ -5,3 +5,6 @@ from django.contrib import admin
 # from Log.models import VersionModel
 #
 # admin.site.register(VersionModel)
+from Log.models import FeedbackModel
+
+admin.site.register(FeedbackModel)
