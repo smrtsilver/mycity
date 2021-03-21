@@ -185,7 +185,7 @@ class base_content(models.Model):
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
     tariff = models.ForeignKey("tariffModel", verbose_name="تعرفه",on_delete=models.SET_NULL, null=True, blank=True)
-    expiretime = jmodels.jDateTimeField(blank=True, null=True)
+    expiretime = jmodels.jDateTimeField(verbose_name="زمان انقضا",blank=True, null=True)
     valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
 
     # NOTSHOW = models.BooleanField(default=False)
@@ -406,15 +406,15 @@ class group(models.Model):
 #
 #     def __str__(self):
 #         return ' {} ({})'.format(self.sub_categoryname, self.id)
-class platformModel(models.Model):
-    class Meta:
-        verbose_name = "پلتفرم"
-        verbose_name_plural = "پلتفرم"
-
-    name = models.CharField(verbose_name="اسم پلتفرم",max_length=20)
-
-    def __str__(self):
-        return self.name
+# class platformModel(models.Model):
+#     class Meta:
+#         verbose_name = "پلتفرم"
+#         verbose_name_plural = "پلتفرم"
+#
+#     name = models.CharField(verbose_name="اسم پلتفرم",max_length=20)
+#
+#     def __str__(self):
+#         return self.name
 
 
 class tariffModel(models.Model):
@@ -422,9 +422,10 @@ class tariffModel(models.Model):
         verbose_name="تعرفه"
         verbose_name_plural="تعرفه"
 
-    platform = models.ForeignKey("platformModel",verbose_name="مربوط به پلتفرم", on_delete=models.CASCADE, related_name="tariff_platform")
+    # platform = models.ForeignKey("platformModel",verbose_name="مربوط به پلتفرم", on_delete=models.CASCADE, related_name="tariff_platform")
+
     description = models.CharField(verbose_name="توضیحات",max_length=100)
-    prize = models.PositiveIntegerField(verbose_name="قیمت",)
+    prize = models.PositiveIntegerField(verbose_name="قیمت")
 
     def __str__(self):
         return "{} - {} ".format(self.platform, self.description)

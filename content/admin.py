@@ -23,7 +23,7 @@ from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTab
 # make_published.short_description = "Mark selected stories as published"
 # admin.site.register(citymodel)
 admin.site.register(tariffModel)
-admin.site.register(platformModel)
+# admin.site.register(platformModel)
 
 class ImageInline(NestedTabularInline):
     model = Image
