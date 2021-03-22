@@ -67,13 +67,14 @@ class set_feedback(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        ser = feedbackserializers(data=request.data)
-        if ser.is_valid():
-            ser.save()
-            context = {
-                "message": "نظر شما با موفقیت ثبت شد"
-            }
+            ser = feedbackserializers(data=request.data, context={"request": request})
+            if ser.is_valid():
+                userprofile = request.user.userprofile
+                ser.save(user_connect=userprofile)
+                context = {
+                    "message": "نظر شما با موفقیت ثبت شد"
+                }
 
-            return Response(context, status.HTTP_200_OK)
-        else:
-            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(context, status.HTTP_200_OK)
+            else:
+                return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
