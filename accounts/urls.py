@@ -10,7 +10,7 @@ urlpatterns = [
     path("smsvalidation/",views.smsvalidation.as_view()),
     path("sendsms/",views.sendsms.as_view()),
     path("forgotpassword/",views.forgotpass.as_view()),
-    # path("myprofile/",views.changeprofiledetails.as_view()),
+    path("myprofile/",views.changeprofiledetails.as_view()),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
 
 

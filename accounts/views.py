@@ -290,44 +290,44 @@ class smsvalidation(APIView):
 #             }
 #             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-# class changeprofiledetails(APIView):
-#     permission_classes = (IsAuthenticated,)
-#     parser_classes = (MultiPartParser,)
-#
-#     def post(self, request):
-#         if "method" in request.data.keys():
-#             method = request.data.get("method")
-#             query = profile.objects.filter(user=request.user)
-#             if method == "show":
-#                 ser = profileuserserializers(query, many=True)
-#                 return Response(ser.data, status=status.HTTP_200_OK)
-#             elif method == "edit":
-#                 serializer = profileuserserializers(query[0], data=request.data, partial=True)
-#                 if serializer.is_valid():
-#                     serializer.save()
-#                     context = {"data": serializer.data,
-#                                "message": "تغییرات با موفقیت انجام شد"}
-#                     return Response(context)
-#                 else:
-#                     context = {"data": serializer.errors,
-#                                "message": "بروز خطا"}
-#                     return Response(context, status=status.HTTP_200_OK)
-#
-#             # ser = profileuserserializers(data=request.data, instance=query[0],partial=True)
-#             # if ser.is_valid():
-#             #     context = {"data": ser.data,
-#             #                "message": "تغییرات با موفقیت انجام شد"}
-#             # else:
-#             #     context = {"data": ser.errors,
-#             #                "message": "بروز خطا"}
-#             # return Response(context, status=status.HTTP_200_OK)
-#             else:
-#
-#                 context = {"message": "نام متد ارسال شده معتبر نیست"}
-#
-#                 return Response(context, status=status.HTTP_200_OK)
-#
-#         else:
-#             context = {"message": "نام متد ارسال نشده"}
-#
-#             return Response(context, status=status.HTTP_200_OK)
+class changeprofiledetails(APIView):
+    permission_classes = (IsAuthenticated,)
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request):
+        if "method" in request.data.keys():
+            method = request.data.get("method")
+            query = profile.objects.filter(user=request.user)
+            if method == "show":
+                ser = profileuserserializers(query, many=True)
+                return Response(ser.data, status=status.HTTP_200_OK)
+            elif method == "edit":
+                serializer = profileuserserializers(query[0], data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    context = {"data": serializer.data,
+                               "message": "تغییرات با موفقیت انجام شد"}
+                    return Response(context)
+                else:
+                    context = {"data": serializer.errors,
+                               "message": "بروز خطا"}
+                    return Response(context, status=status.HTTP_200_OK)
+
+            # ser = profileuserserializers(data=request.data, instance=query[0],partial=True)
+            # if ser.is_valid():
+            #     context = {"data": ser.data,
+            #                "message": "تغییرات با موفقیت انجام شد"}
+            # else:
+            #     context = {"data": ser.errors,
+            #                "message": "بروز خطا"}
+            # return Response(context, status=status.HTTP_200_OK)
+            else:
+
+                context = {"message": "نام متد ارسال شده معتبر نیست"}
+
+                return Response(context, status=status.HTTP_200_OK)
+
+        else:
+            context = {"message": "نام متد ارسال نشده"}
+
+            return Response(context, status=status.HTTP_200_OK)

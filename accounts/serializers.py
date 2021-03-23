@@ -42,18 +42,22 @@ class userserializer(serializers.ModelSerializer):
 
 
 class profileuserserializers(serializers.ModelSerializer):
-    firstname = serializers.CharField(source="user.first_name")
-    lastname = serializers.CharField(source="user.last_name")
+    firstname = serializers.CharField(source="user.first_name",allow_blank=True)
+    lastname = serializers.CharField(source="user.last_name",allow_blank=True)
 
     # profile_image=serializers.ImageField()
     class Meta:
         model = profile
 
         exclude = ("user",)
+        extra_kwargs = {
+            'id': {'read_only': True},
+
+        }
 
     def update(self, instance, validated_data):
 
-            user_data = validated_data.pop('user')
+            user_data = validated_data.get("user",None)
             user = instance.user
 
             # * User Info
@@ -61,15 +65,15 @@ class profileuserserializers(serializers.ModelSerializer):
                 'city', instance.city)
             instance.profile_image = validated_data.get(
                 'profile_image', instance.profile_image)
-
             instance.save()
 
             # * AccountProfile Info
-            user.first_name = user_data.get(
-                'first_name', user.first_name)
-            user.last_name = user_data.get(
-                'last_name', user.last_name)
-            user.save()
+            if user_data:
+                user.first_name = user_data.get(
+                    'first_name', user.first_name)
+                user.last_name = user_data.get(
+                    'last_name', user.last_name)
+                user.save()
 
             return instance
 
@@ -90,6 +94,7 @@ class profileserializer(serializers.ModelSerializer):
     class Meta:
         model = profile
         fields = ("profile_image", "fullname")
+
 # class CreateUserSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = User
