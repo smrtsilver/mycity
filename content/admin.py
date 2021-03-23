@@ -3,6 +3,7 @@ from django.contrib.admin import DateFieldListFilter
 from django.db.models import Count
 from django.utils.html import format_html
 from django.utils.translation import ngettext
+from django_jalali.admin.filters import JDateFieldListFilter
 
 from content.models import *
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
@@ -91,10 +92,10 @@ class expiretimefilter(admin.SimpleListFilter):
             return queryset.filter(expiretime__gte=jmodels.timezone.now())
 
 
-from django_jalali.admin.filters import JDateFieldListFilter
+
 
 #you need import this for adding jalali calander widget
-import django_jalali.admin as jadmin
+
 class BarAdmin(admin.ModelAdmin):
     list_filter = (
         ('date', JDateFieldListFilter),
