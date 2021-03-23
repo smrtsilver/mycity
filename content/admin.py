@@ -71,6 +71,39 @@ class validfilter(admin.SimpleListFilter):
         elif self.value() == "3":
             return queryset.filter(valid__exact=3)
 
+class expiretimefilter(admin.SimpleListFilter):
+
+    title = ('بر اساس تاريخ انقضا')
+
+    parameter_name = 'expire'
+
+    def lookups(self, request, model_admin):
+        return (
+            (1, "منقضی شده"),
+            (2, "مهلت دار"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "1":
+            # jmodels.timezone.now() + datetime.timedelta(seconds=10)
+            return queryset.filter(expiretime__lt=jmodels.timezone.now())
+        elif self.value() == "2":
+            return queryset.filter(expiretime__gte=jmodels.timezone.now())
+
+
+from django_jalali.admin.filters import JDateFieldListFilter
+
+#you need import this for adding jalali calander widget
+import django_jalali.admin as jadmin
+class BarAdmin(admin.ModelAdmin):
+    list_filter = (
+        ('date', JDateFieldListFilter),
+    )
+
+class BarTimeAdmin(admin.ModelAdmin):
+    list_filter = (
+        ('expiretime', JDateFieldListFilter),
+    )
 
 class basecontentAdmin(NestedModelAdmin):
     # class Media:
@@ -83,7 +116,9 @@ class basecontentAdmin(NestedModelAdmin):
     ordering = ['valid', "-create_time"]
     # list_filter = ("valid","group")
     list_filter = [
-        "city"
+        "city",
+        ('expiretime', JDateFieldListFilter),
+
         # ('create_time', DateFieldListFilter)
     ]
 
@@ -146,7 +181,10 @@ class basecontentAdmin(NestedModelAdmin):
     def changelist_view(self, request, extra_context=None):
         if request.user.is_superuser:
             self.list_filter = [
-                "city"
+                "city",
+                expiretimefilter,
+
+
                 # ('create_time', DateFieldListFilter)
             ]
             self.list_filter.extend([validfilter])
@@ -221,7 +259,7 @@ class basecontentAdmin(NestedModelAdmin):
     # call.admin_order_field = 'call'
 
 
-admin.site.register(base_content, basecontentAdmin)
+admin.site.register(base_content,basecontentAdmin)
 # class albumInline(admin.TabularInline):
 #     model = ImageAlbum
 # class ImageInline(admin.TabularInline):

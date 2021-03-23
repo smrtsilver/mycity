@@ -501,11 +501,11 @@ def do_something_if_changed(sender, instance, **kwargs):
         obj = sender.objects.get(id__exact=instance.pk)
         if obj.valid != instance.valid and instance.valid == 1:
 
-            instance.expiretime = jmodels.timezone.now() + datetime.timedelta(seconds=10)
+            instance.expiretime = jmodels.timezone.now() + datetime.timedelta(days=30)
         else:
             pass
     else:
         if instance.valid == 1:
-            instance.expiretime = jmodels.timezone.now() + datetime.timedelta(seconds=10)
+            instance.expiretime = jmodels.timezone.now() + datetime.timedelta(days=30)
         else:
             pass
