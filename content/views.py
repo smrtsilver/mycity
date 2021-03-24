@@ -25,27 +25,30 @@ from content.utils import modify_input_for_multiple_files
 
 class get_tariff(APIView):
     permission_classes = (IsAuthenticated,)
+
     def post(self, request):
         ser = tariffserializers(tariffModel.objects.all(), many=True)
         return Response(ser.data, status=status.HTTP_200_OK)
 
+
 class delete_content(APIView):
     permission_classes = (IsAuthenticated,)
-    def post(self,request):
-        id=request.data.get("id")
+
+    def post(self, request):
+        id = request.data.get("id")
         if id:
             user_profile = request.user.userprofile
-            query = get_object_or_404(base_content,author=user_profile,id=id)
+            query = get_object_or_404(base_content, author=user_profile, id=id)
             query.delete_post()
-            context={
-                "detail":"پست با موفقیت پاک شد"
+            context = {
+                "detail": "پست با موفقیت پاک شد"
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
             context = {
                 "detail": "لطفا شماره ایدی پست را ارسال کنید"
             }
-            return Response(context,status=status.HTTP_200_OK)
+            return Response(context, status=status.HTTP_200_OK)
 
 
 class get_group(APIView):
