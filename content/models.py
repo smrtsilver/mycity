@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save, pre_save, post_delete, pre_delete
 from django.dispatch import receiver
+
+
 from accounts.models import profile
 from django_jalali.db import models as jmodels
 from content.utils import compress
@@ -423,14 +425,25 @@ class tariffModel(models.Model):
         verbose_name_plural="تعرفه"
 
     # platform = models.ForeignKey("platformModel",verbose_name="مربوط به پلتفرم", on_delete=models.CASCADE, related_name="tariff_platform")
-
+    # from jdatetime import datetime
+    # from datetime import datetime
     description = models.CharField(verbose_name="توضیحات",max_length=100)
+    time=models.TimeField()
     prize = models.PositiveIntegerField(verbose_name="قیمت")
 
     def __str__(self):
         return "{} - {} ".format(self.platform, self.description)
 
-
+    # choices = (
+    #     (datetime.datetime.strptime('07:00', "%H:%M").time(), '7:00 am'),
+    #     (datetime.datetime.strptime('08:00', "%I:%M").time(), '8:00 am'),
+    #     (datetime.datetime.strptime('09:00', "%I:%M").time(), '9:00 am'),
+    #     (datetime.datetime.strptime('06:00', "%I:%M").time(), '6:00 pm'),
+    #     (datetime.datetime.strptime('07:00', "%I:%M").time(), '7:00 pm'),
+    #     (datetime.datetime.strptime('08:00', "%I:%M").time(), '8:00 pm'),
+    #     (datetime.datetime.strptime('09:00', "%I:%M").time(), '9:00 pm'),
+    #
+    # ))
 # class Product(models.Model):
 #     name = models.CharField(max_length=255)
 #     album = models.OneToOneField(ImageAlbum, related_name='model', on_delete=models.CASCADE)
