@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from accounts.models import sms
+from accounts.models import sms, PushToken
 from accounts.serializers import *
 from accounts.utils import sendsmsmethod
 from django.contrib.auth.models import User
@@ -66,6 +66,7 @@ class login_user(APIView):
         if serializer.is_valid():
             username = serializer.data["username"]
             password = serializer.data["password"]
+            pushtoken = serializer.data["pushtoken"]
         else:
             content = {
                 "message": "ورودی ها صحیح نیست",
@@ -78,6 +79,7 @@ class login_user(APIView):
             user = authenticate(username=username, password=password)
             if user:
                 # login(request, user)
+                PushToken.objects.get_or_create(ptoken=pushtoken,userpushtoken=user.userprofile)
                 content = {
                     "message": "ورود موفقیت آمیز بود",
                     "authenticate": True,
@@ -106,6 +108,7 @@ class signup(APIView):
         if serializer.is_valid():
             username = serializer.data["username"]
             password = serializer.data["password"]
+            pushtoken=serializer.data["pushtoken"]
 
         else:
             content = {
@@ -117,6 +120,7 @@ class signup(APIView):
             user = User.objects.get(username=username)
         except:
             user = User.objects.create_user(username=username, password=password)
+            o=PushToken.objects.create(userpushtoken=user.userprofile,ptoken=pushtoken)
             content = {
                 "message": "ثبت نام با موفقیت انجام شد",
                 "user_created": True,
@@ -307,7 +311,7 @@ class changeprofiledetails(APIView):
                     serializer.save()
                     context = {"data": serializer.data,
                                "message": "تغییرات با موفقیت انجام شد"}
-                    return Response(context)
+                    return Response(context,status=status.HTTP_200_OK)
                 else:
                     context = {"data": serializer.errors,
                                "message": "بروز خطا"}

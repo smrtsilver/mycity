@@ -16,6 +16,7 @@ class loginserializers(serializers.Serializer):
     # todo phonenumber validator
     username = serializers.CharField()
     password = serializers.CharField(required=True)
+    pushtoken=serializers.CharField()
 
 
 # class signupserializers(serializers.Serializer):
