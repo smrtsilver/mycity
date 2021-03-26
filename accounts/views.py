@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate, login
+from fcm_django.models import FCMDevice
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from accounts.models import sms, PushToken
+from accounts.models import sms
 from accounts.serializers import *
 from accounts.utils import sendsmsmethod
 from django.contrib.auth.models import User
@@ -11,6 +12,8 @@ from rest_framework.parsers import MultiPartParser
 # from rest_framework.authtoken.admin import User
 import pyotp
 from rest_framework.authtoken.models import Token
+
+
 # import requests
 # new_token = Token.objects.create(user=request.user)
 
@@ -59,14 +62,62 @@ class anonymous(APIView):
             return Response(content, status=status.HTTP_200_OK)
 
 
+class logout(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        if request.data.get("fcm_token"):
+            try:
+                device = FCMDevice.objects.get(user=request.user, registration_id=request.data.get("fcm_token"))
+            except FCMDevice.DoesNotExist:
+                pass
+            else:
+                device.active = False
+                device.save()
+        else:
+            context = {
+                "detail": "پوش توکن ارسال نشده است"
+            }
+            return Response(context, status=status.HTTP_200_OK)
+
+
 class login_user(APIView):
 
     def post(self, request):
         serializer = loginserializers(data=request.data)
         if serializer.is_valid():
-            username = serializer.data["username"]
-            password = serializer.data["password"]
-            pushtoken = serializer.data["pushtoken"]
+            json = serializer.data
+            try:
+                user = authenticate(username=json['username'], password=json['password'])
+                if user:
+                    # login(request, user)
+                    pushToken = json['fcm_token']
+                    device = FCMDevice.objects.get_or_create(user=user, registration_id=pushToken)
+                    device.type = json['type']
+                    device.name = json['name']
+                    device.active = True
+                    device.save()
+                    content = {
+                        "message": "ورود موفقیت آمیز بود",
+                        "authenticate": True,
+                        "Token": user.auth_token.key
+
+                    }
+                    login(request, user)
+                    return Response(content, status=status.HTTP_200_OK)
+                else:
+                    content = {
+                        "message": "نام کاربری یا رمز عبور اشتباه است",
+                        "authenticate": False
+                    }
+                    return Response(content, status=status.HTTP_200_OK)
+            except:
+                content = {
+                    "message": "ارور نامشخص"
+                }
+                return Response(content, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
         else:
             content = {
                 "message": "ورودی ها صحیح نیست",
@@ -75,30 +126,6 @@ class login_user(APIView):
 
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            user = authenticate(username=username, password=password)
-            if user:
-                # login(request, user)
-                PushToken.objects.get_or_create(ptoken=pushtoken,userpushtoken=user.userprofile)
-                content = {
-                    "message": "ورود موفقیت آمیز بود",
-                    "authenticate": True,
-                    "Token": user.auth_token.key
-
-                }
-                login(request, user)
-                return Response(content, status=status.HTTP_200_OK)
-            else:
-                content = {
-                    "message": "نام کاربری یا رمز عبور اشتباه است",
-                    "authenticate": False
-                }
-                return Response(content, status=status.HTTP_200_OK)
-        except:
-            content = {
-                "message": "ارور نامشخص"
-            }
-            return Response(content, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class signup(APIView):
@@ -106,33 +133,40 @@ class signup(APIView):
     def post(self, request):
         serializer = loginserializers(data=request.data)
         if serializer.is_valid():
-            username = serializer.data["username"]
-            password = serializer.data["password"]
-            pushtoken=serializer.data["pushtoken"]
+            try:
+                json = serializer.data
+                user = User.objects.get(username=json['username'])
+            except User.DoesNotExist:
+                user = User.objects.create_user(username=json['username'], password=json['password'])
+                fcm_token = json['fcm_token']
+                device = FCMDevice()
+                device.registration_id = fcm_token
+                device.type = json['type']
+                device.name = json['name']
+                device.user = user
+                device.active = True
+                device.save()
+                content = {
+                    "message": "ثبت نام با موفقیت انجام شد",
+                    "user_created": True,
+                    "Token": user.auth_token.key
+                }
+                user = authenticate(username=json['username'], password=json['password'])
+                login(request, user)
+                return Response(content, status=status.HTTP_201_CREATED)
+            else:
+                content = {
+                    "message": "کاربر قبلا ثیت نام کرده است، لطفا وارد شوید"
+
+                }
+                return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+
 
         else:
             content = {
                 "message": "ورودی ها صحیح نیست",
                 "error": serializer.errors
-            }
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            user = User.objects.get(username=username)
-        except:
-            user = User.objects.create_user(username=username, password=password)
-            o=PushToken.objects.create(userpushtoken=user.userprofile,ptoken=pushtoken)
-            content = {
-                "message": "ثبت نام با موفقیت انجام شد",
-                "user_created": True,
-                "Token": user.auth_token.key
-            }
-            user = authenticate(username=username, password=password)
-            login(request, user)
-            return Response(content, status=status.HTTP_201_CREATED)
-        else:
-            content = {
-                "message": "کاربر قبلا ثیت نام کرده است، لطفا وارد شوید"
-
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
@@ -189,7 +223,7 @@ class sendsms(APIView):
                         # Todo karbar nabod chi???
                         content = {
                             "message": "کاربر یافت نشد",
-                            "status" : False
+                            "status": False
                         }
                         return Response(content, status=status.HTTP_200_OK)
                     else:
@@ -263,6 +297,7 @@ class smsvalidation(APIView):
 
             return Response(ser.errors, status=status.HTTP_200_OK)
 
+
 # class changepassword(APIView):
 #     permission_classes = (IsAuthenticated,)
 #
@@ -311,7 +346,7 @@ class changeprofiledetails(APIView):
                     serializer.save()
                     context = {"data": serializer.data,
                                "message": "تغییرات با موفقیت انجام شد"}
-                    return Response(context,status=status.HTTP_200_OK)
+                    return Response(context, status=status.HTTP_200_OK)
                 else:
                     context = {"data": serializer.errors,
                                "message": "بروز خطا"}

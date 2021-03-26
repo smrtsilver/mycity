@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     "content.apps.ContentConfig",
     "django_jalali",
-    "nested_admin"
+    "nested_admin",
+    "fcm_django",
 
 ]
 
@@ -141,4 +142,9 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.AllowAny'
 
     )
+}
+FCM_DJANGO_SETTINGS = {
+"FCM_SERVER_KEY": "AAAA4tb-gLY"
+                  ":APA91bEu3Ua_bOJ2bMry5vSgqUe61q0LOn0Zk7t9Kyzpq5BzELWWnSNNiKqS5WpezQJcdeSnVV3UOL75o62SjRgsoQXpFmZ"
+                  "-x81K8qQBtsopCQS66OIZDIMMT6WZoMGxDoHpTMLs0ngx "
 }

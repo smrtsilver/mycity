@@ -67,7 +67,3 @@ class sms(models.Model):
 
     def __str__(self):
         return self.phonenumber
-
-class PushToken(models.Model):
-    ptoken=models.CharField(max_length=300)
-    userpushtoken=models.ForeignKey("profile",on_delete=models.PROTECT,related_name="pushtoken_profile")

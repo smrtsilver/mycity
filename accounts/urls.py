@@ -13,6 +13,8 @@ urlpatterns = [
     path("myprofile/",views.changeprofiledetails.as_view()),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
 
+    path("logout/",views.logout.as_view())
+
 
 
 ]
