@@ -18,8 +18,6 @@ urlpatterns = [
     path("mycard/",views.get_mycard.as_view()),
     path("getcity/",views.getcity.as_view()),
     path("favorite/",views.get_favorite.as_view())
-
-
     # path("subcategory/",views.get_subgroup.as_view())
 
 
