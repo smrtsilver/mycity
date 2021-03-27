@@ -72,8 +72,6 @@ class create_content(APIView):
     permission_classes = (IsAuthenticated,)
     parser_classes = (MultiPartParser, FileUploadParser)
 
-    # parser_classes = (FileUploadParser,)
-    # MultiPartParser
     def post(self, request):
         global arr
         data = request.data
@@ -81,8 +79,8 @@ class create_content(APIView):
         if content.is_valid():
             obj = content.save(author=request.user.userprofile)
         else:
-
             return Response(content.errors, status=status.HTTP_200_OK)
+
         if "image" in request.data:
             images = dict((request.data).lists())['image']
             arr = []
@@ -98,6 +96,7 @@ class create_content(APIView):
                     arr.append(file_serializer.data)
                 else:
                     return Response(file_serializer.errors, status=status.HTTP_200_OK)
+            # ToDO add device admin
             context = {
                 "created": True,
                 "id": obj.id
@@ -105,6 +104,7 @@ class create_content(APIView):
             }
             return Response(context, status=status.HTTP_200_OK)
         else:
+            # ToDO add device admin
             context = {
                 "created": True,
                 "id": obj.id

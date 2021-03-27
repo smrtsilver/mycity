@@ -146,5 +146,16 @@ REST_FRAMEWORK = {
 FCM_DJANGO_SETTINGS = {
 "FCM_SERVER_KEY": "AAAA4tb-gLY"
                   ":APA91bEu3Ua_bOJ2bMry5vSgqUe61q0LOn0Zk7t9Kyzpq5BzELWWnSNNiKqS5WpezQJcdeSnVV3UOL75o62SjRgsoQXpFmZ"
-                  "-x81K8qQBtsopCQS66OIZDIMMT6WZoMGxDoHpTMLs0ngx "
+                  "-x81K8qQBtsopCQS66OIZDIMMT6WZoMGxDoHpTMLs0ngx ",
+# # default: _('FCM Django')
+#                   "APP_VERBOSE_NAME": "[string for AppConfig's verbose_name]",
+#                                       # Your firebase API KEY
+#                                       "FCM_SERVER_KEY": "[your api key]",
+# # true if you want to have only one active device per registered user at a time
+# # default: False
+# "ONE_DEVICE_PER_USER": True / False,
+# # devices to which notifications cannot be sent,
+# # are deleted upon receiving error response from FCM
+# # default: False
+# "DELETE_INACTIVE_DEVICES": True / False,
 }
