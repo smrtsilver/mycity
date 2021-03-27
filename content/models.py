@@ -1,8 +1,10 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save, pre_save, post_delete, pre_delete
 from django.dispatch import receiver
-
+# from jdatetime import timedelta
 
 from accounts.models import profile
 from django_jalali.db import models as jmodels
@@ -428,11 +430,15 @@ class tariffModel(models.Model):
     # from jdatetime import datetime
     # from datetime import datetime
     description = models.CharField(verbose_name="توضیحات",max_length=100)
-    time=models.TimeField()
-    prize = models.PositiveIntegerField(verbose_name="قیمت")
+    time=models.DurationField(default=timedelta(days=1,hours=1), help_text="ساعت به صورت "
+                                                                           "hours:minutes:seconds day"
+                                                                            " وارد کنید "
+                                                                           " مانند: "
+                                                                            "12:23:00 6")
+    price = models.PositiveIntegerField(verbose_name="قیمت")
 
     def __str__(self):
-        return "{} - {} ".format(self.platform, self.description)
+        return "{}".format(self.description)
 
     # choices = (
     #     (datetime.datetime.strptime('07:00', "%H:%M").time(), '7:00 am'),
