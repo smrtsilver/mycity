@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django_jalali",
     "nested_admin",
     "fcm_django",
+    "shop"
 
 ]
 
@@ -129,8 +130,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"),]
-# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static"),]
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': (
     #     'rest_framework.permissions.IsAuthenticated',

@@ -24,7 +24,7 @@ class profile(models.Model):
         verbose_name_plural="پروفایل کاربر"
     #Todo folderbandi
     profile_image=models.ImageField(verbose_name="تصویر کاربر",upload_to=get_upload_path,default="1.jpg")
-    user = models.OneToOneField(User, verbose_name="اکانت کاربر",on_delete=models.CASCADE,related_name="userprofile")
+    user = models.OneToOneField(User, verbose_name="اکانت کاربر",on_delete=models.PROTECT,related_name="userprofile")
     city = models.CharField(verbose_name="شهر کاربر",max_length=30)
 
     @receiver(post_save, sender=User)

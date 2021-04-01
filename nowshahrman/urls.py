@@ -18,11 +18,18 @@ from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path,include
-
+from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
-    path('', admin.site.urls),
+
+
+
+# whatever urls you might have in here
+# make sure the 'catch-all' url is placed last
+    path("shop/", include("shop.urls"), name="shop"),
+    path('', RedirectView.as_view(pattern_name='shop', permanent=False)),
+    path('admin/', admin.site.urls),
     path("accounts/",include("accounts.urls"),name="accounts"),
     path("contents/", include("content.urls"), name="content"),
     path("log/",include("Log.urls")),

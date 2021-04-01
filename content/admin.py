@@ -200,6 +200,9 @@ class basecontentAdmin(NestedModelAdmin):
         if not is_superuser:
             form.base_fields['phonenumber'].disabled = True
 
+        form.base_fields['tariff'].help_text = "برای انتخاب چند آگهی کلید ctrl را فشار دهید و سپس انتخاب کنید"
+
+
         return form
 
     readonly_fields = [

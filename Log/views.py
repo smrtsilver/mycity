@@ -13,7 +13,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from zeep import Client
 
-MERCHANT = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
+MERCHANT = '06b5bac9-4311-42cd-aaef-a1fe2d5df17c'
 client = Client('https://www.zarinpal.com/pg/services/WebGate/wsdl')
 amount = 1000  # Toman / Required
 description = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید"  # Required
@@ -21,12 +21,19 @@ email = 'email@example.com'  # Optional / useremail
 mobile = '09123456789'  # Optional / user number
 CallbackURL = 'http://localhost:8000/log/verify/' # Important: need to edit for realy server.
 
-def send_request(request):
-    result = client.service.PaymentRequest(MERCHANT, amount, description, email, mobile, CallbackURL)
-    if result.Status == 100:
-        return redirect('https://www.zarinpal.com/pg/StartPay/' + str(result.Authority))
-    else:
-        return HttpResponse('Error code: ' + str(result.Status))
+class payment(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        # def send_request(request):
+        #need id post
+        # user
+        # tariff
+        # number usernumber
+        result = client.service.PaymentRequest(MERCHANT, amount, description, email, mobile, CallbackURL)
+        if result.Status == 100:
+            return redirect('https://www.zarinpal.com/pg/StartPay/' + str(result.Authority))
+        else:
+            return HttpResponse('Error code: ' + str(result.Status))
 
 def verify(request):
     if request.GET.get('Status') == 'OK':

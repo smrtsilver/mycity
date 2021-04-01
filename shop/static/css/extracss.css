@@ -1,0 +1,18 @@
+@font-face {
+  font-family: iransanls;
+  src: local('Abc'),
+       url('../fonts/iransans.ttf') format("truetype");
+}
+@font-face {
+  font-family: calibriextra;
+  src: local('Abc'),
+       url('../fonts/calibri.ttf') format("truetype");
+}
+
+body {
+   
+    background-color:#d9edf7;
+
+}
+* {
+    font-family: calibri, iransanss !important;}

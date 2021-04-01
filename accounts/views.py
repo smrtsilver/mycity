@@ -74,6 +74,7 @@ class logout(APIView):
             else:
                 device.active = False
                 device.save()
+            return Response(status=status.HTTP_200_OK)
         else:
             context = {
                 "detail": "پوش توکن ارسال نشده است"
@@ -93,10 +94,11 @@ class login_user(APIView):
                     # login(request, user)
                     pushToken = json['fcm_token']
                     device = FCMDevice.objects.get_or_create(user=user, registration_id=pushToken)
-                    device.type = json['type']
-                    device.name = json['name']
-                    device.active = True
-                    device.save()
+                    de=device[0]
+                    de.type = json['type']
+                    de.name = json['name']
+                    de.active = True
+                    de.save()
                     content = {
                         "message": "ورود موفقیت آمیز بود",
                         "authenticate": True,

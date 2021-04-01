@@ -10,7 +10,7 @@ urlpatterns = [
     path("feedback/",views.set_feedback.as_view()),
 
     #zarinpal
-    path("request/", views.send_request, name='request'),
+    path("request/", views.payment.as_view(), name='request'),
     path("verify/", views.verify, name='verify'),
 
 ]

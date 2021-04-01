@@ -1,11 +1,12 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save, pre_save, post_delete, pre_delete
 from django.dispatch import receiver
 # from jdatetime import timedelta
-
+from django.db.models.signals import m2m_changed
 from accounts.models import profile
 from django_jalali.db import models as jmodels
 from content.utils import compress
@@ -188,14 +189,30 @@ class base_content(models.Model):
 
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
-    tariff = models.ForeignKey("tariffModel", verbose_name="تعرفه",on_delete=models.SET_NULL, null=True, blank=True)
+    tariff = models.ManyToManyField("tariffModel", verbose_name="تعرفه", blank=True,
+                               related_name="content_tariff")
     expiretime = jmodels.jDateTimeField(verbose_name="زمان انقضا",blank=True, null=True)
+    startshowtime = jmodels.jDateTimeField(verbose_name="زمان نمایش",blank=True, null=True)
     valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
 
-    # NOTSHOW = models.BooleanField(default=False)
+    Special = models.BooleanField(default=False,verbose_name="ویژه")
 
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
+
+    def update_tarriftime(self):
+        if self.tariff.all():
+                lastAPPtariff=self.tariff.filter(platform=1)
+                if lastAPPtariff:
+                    if self.valid==1:
+                        self.tarifftime = jmodels.timezone.now() + lastAPPtariff[0].time
+
+                else:
+                    self.tarifftime=None
+
+        else:
+            self.tarifftime = None
+
 
     def delete_post(self):
         self.valid = 4
@@ -414,28 +431,34 @@ class group(models.Model):
 #     class Meta:
 #         verbose_name = "پلتفرم"
 #         verbose_name_plural = "پلتفرم"
-#
+#     id=models.AutoField(primary_key=True,verbose_name='آیدی')
 #     name = models.CharField(verbose_name="اسم پلتفرم",max_length=20)
 #
 #     def __str__(self):
 #         return self.name
-
+#
 
 class tariffModel(models.Model):
     class Meta:
         verbose_name="تعرفه"
         verbose_name_plural="تعرفه"
-
-    # platform = models.ForeignKey("platformModel",verbose_name="مربوط به پلتفرم", on_delete=models.CASCADE, related_name="tariff_platform")
+    pchoices=(
+        (1,"اپلیکیشن"),
+        (2,"تلگرام"),
+        (3,"اینستاگرام"),
+    )
+    platform = models.SmallIntegerField(verbose_name="مربوط به پلتفرم",choices=pchoices)
     # from jdatetime import datetime
     # from datetime import datetime
+    title=models.CharField(verbose_name="عنوان",max_length=100)
     description = models.CharField(verbose_name="توضیحات",max_length=100)
     time=models.DurationField(default=timedelta(days=1,hours=1), help_text="ساعت به صورت "
                                                                            "hours:minutes:seconds day"
                                                                             " وارد کنید "
                                                                            " مانند: "
-                                                                            "12:23:00 6")
+                                                                            "6 12:23:00")
     price = models.PositiveIntegerField(verbose_name="قیمت")
+
 
     def __str__(self):
         return "{}".format(self.description)
@@ -512,19 +535,33 @@ class ImageAlbum(models.Model):
         # instance.ImageAlbum.save()
 
 
+
+def tariffchange(sender, **kwargs):
+    # Do something
+    print("arerrrrrrerreererrereerrerererere")
+
+m2m_changed.connect(tariffchange, sender=base_content.tariff.through)
+
 # Todo complete this part
 @receiver(pre_save, sender=base_content)
 def do_something_if_changed(sender, instance, **kwargs):
+    global obj
     import datetime
     if not instance._state.adding:
         obj = sender.objects.get(id__exact=instance.pk)
         if obj.valid != instance.valid and instance.valid == 1:
-
             instance.expiretime = jmodels.timezone.now() + datetime.timedelta(days=30)
+            instance.startshowtime = jmodels.timezone.now()
+
+    if instance.valid == 1:
+        if obj.Special != instance.Special and instance.Special:
+            instance.startshowtime = jmodels.timezone.now()
         else:
             pass
     else:
         if instance.valid == 1:
             instance.expiretime = jmodels.timezone.now() + datetime.timedelta(days=30)
-        else:
-            pass
+            instance.startshowtime=jmodels.timezone.now()
+
+
+

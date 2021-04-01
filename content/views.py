@@ -1,3 +1,5 @@
+from sre_parse import SPECIAL_CHARS
+
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework import status
 from rest_framework.views import APIView
@@ -22,12 +24,17 @@ from django.db.models import Q
 
 from content.utils import modify_input_for_multiple_files
 
-
 class get_tariff(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         ser = tariffserializers(tariffModel.objects.all(), many=True)
+        return Response(ser.data, status=status.HTTP_200_OK)
+
+class get_Special(APIView):
+    def get(self,request):
+        query=base_content.objects.filter(valid__exact=1).filter(Special__exact=True).orderby("-startshowtime")[:10]
+        ser = getcontentserializer(query, many=True)
         return Response(ser.data, status=status.HTTP_200_OK)
 
 
@@ -195,12 +202,12 @@ class get_content(APIView):
                 model_filter = Q(title__icontains=search) | Q(description__icontains=search)
 
             if city == 0:
-                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(
+                query = base_content.objects.filter(Special__exact=False).filter(group_id=group_id).filter(valid__exact=1).filter(
                     model_filter).order_by(
                     "create_time")[
                         skip:skip + step]
             elif city in city_id_list:
-                query = base_content.objects.filter(group_id=group_id).filter(valid__exact=True).filter(
+                query = base_content.objects.filter.filter(Special__exact=False).filter(group_id=group_id).filter(valid__exact=1).filter(
                     city_id=city).filter(
                     model_filter).order_by(
                     "create_time")[

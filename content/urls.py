@@ -8,7 +8,7 @@ urlpatterns = [
 
     path("deletecontent/", views.delete_content.as_view()),
     path("tariff/",views.get_tariff.as_view()),
-
+    path("special/",views.get_Special.as_view()),
     path("getcategory/",views.get_group.as_view()),
     path("getcontent/",views.get_content.as_view()),
     path("getslider/",views.get_slider.as_view()),
