@@ -1,5 +1,4 @@
 from sre_parse import SPECIAL_CHARS
-
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework import status
 from rest_framework.views import APIView
@@ -28,8 +27,25 @@ class get_tariff(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        ser = tariffserializers(tariffModel.objects.all(), many=True)
-        return Response(ser.data, status=status.HTTP_200_OK)
+
+
+
+        appquery=tariffModel.objects.filter(platform__exact=1)
+        Telegramquery=tariffModel.objects.filter(platform__exact=2)
+        Instagramquery=tariffModel.objects.filter(platform__exact=3)
+        serapp = list(tariffserializers(appquery, many=True).data)
+        sertelegram = list(tariffserializers(Telegramquery, many=True).data)
+        serinstagram = list(tariffserializers(Instagramquery, many=True).data)
+
+        serapp.insert(0,{"sub" : "اپلیکیشن"})
+        sertelegram.insert(0,{"sub" : "تلگرام"})
+        serinstagram.insert(0,{"sub" : "اینستاگرام"})
+        data={
+            "APP" : serapp,
+            "Telegram" : sertelegram,
+            "Instagram" : serinstagram,
+        }
+        return Response(data,status=status.HTTP_200_OK)
 
 class get_Special(APIView):
     def get(self,request):

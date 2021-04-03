@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "django_jalali",
     "nested_admin",
     "fcm_django",
-    "shop"
+    "shop",
+
 
 ]
 

@@ -179,11 +179,41 @@ class groupserializers(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class tabsareserializer(serializers.ModelSerializer):
+    class Meta:
+        model = TariffOptionsModel
+        exclude = ("id","tariff")
 class tariffserializers(serializers.ModelSerializer):
+    # tabsare = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    tabsare=tabsareserializer(many=True, read_only=True)
     class Meta:
         model = tariffModel
         fields = "__all__"
         depth = 1
+
+    # def to_representation(self,obj):
+    #     rep= super(tariffserializers,self).to_representation(obj)
+    #     rep['events']= [ customer.platform for customer in tariffModel.objects.filter(platform=obj.platform)]
+    #     return rep
+    # def to_representation(self, instance):
+    #     # Result = dict()
+    #     ret = super(tariffModel, self).to_representation(instance)
+    #     profile = ret.pop("profileimage")
+    #     ret.update({"profileiamge": profile["profile_image"]})
+    #     ret.update({"user": profile["fullname"]})
+    #     # TOP=ret.pop("topN")
+    #     #
+    #     # representation = {
+    #     #     'image': self.profileimage.data
+    #     #                  }
+    #
+    #     # Result["result"] = ret
+    #     # Result.update({"TOP": TOP})
+    #     return ret
+    #
+    #     # def get_tax_status_all(self, obj):  # "get_" + field name
+    #     #     return obj.tax_status(check_item_bought=False)
+    #     # todo use this to check if name is None or not
 
 #TODO
 # class cityprobserializers(serializers.ModelSerializer):

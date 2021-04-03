@@ -485,7 +485,13 @@ class tariffModel(models.Model):
 #
 # class Apple(Product):
 #     weight = models.FloatField()
-
+class TariffOptionsModel(models.Model):
+    class Meta:
+        verbose_name="تبصره"
+        verbose_name_plural="تبصره"
+    descriptions=models.TextField(verbose_name="توضیحات")
+    price=models.PositiveIntegerField(verbose_name="قیمت")
+    tariff=models.ForeignKey("tariffModel",on_delete=models.CASCADE,verbose_name="مربوط به تعرفه",related_name="tabsare")
 
 # class BlogPost(models.Model):
 #     name = models.CharField(max_length=255)

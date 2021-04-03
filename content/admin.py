@@ -23,8 +23,17 @@ from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTab
 #     queryset.update(status='p')
 # make_published.short_description = "Mark selected stories as published"
 # admin.site.register(citymodel)
-admin.site.register(tariffModel)
+
 # admin.site.register(platformModel)
+
+class tabsareInline(NestedTabularInline):
+    model= TariffOptionsModel
+    extra = 1
+
+class tariffModelInline(admin.ModelAdmin):
+    model= tariffModel
+    extra = 1
+    inlines = [tabsareInline,]
 
 class ImageInline(NestedTabularInline):
     model = Image
@@ -264,6 +273,7 @@ class basecontentAdmin(NestedModelAdmin):
 
 
 admin.site.register(base_content,basecontentAdmin)
+admin.site.register(tariffModel,tariffModelInline)
 # class albumInline(admin.TabularInline):
 #     model = ImageAlbum
 # class ImageInline(admin.TabularInline):
