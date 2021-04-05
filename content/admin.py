@@ -216,8 +216,23 @@ class basecontentAdmin(NestedModelAdmin):
 
     readonly_fields = [
         'createtime',
+         "timevalid"
     ]
+    def timevalid(self, obj):
 
+            year = obj.validtime.date().year
+            day = obj.validtime.date().day
+            month = obj.validtime.date().month
+            date= f"{year}/{day}/{month}"
+
+            hour = obj.validtime.time().hour
+            minute = obj.validtime.time().minute
+            second = obj.validtime.time().second
+            time= f"{hour}:{minute}:{second}"
+
+            return f"{date}  {time}"
+
+    timevalid.short_description = "زمان تاييد"
     def createtime(self, obj):
         time = obj.get_time()
         date = obj.get_date()
@@ -236,6 +251,7 @@ class basecontentAdmin(NestedModelAdmin):
         if request.user.is_superuser:
             return qs.exclude(valid=4)
         return qs.filter(author=request.user.userprofile).exclude(valid=4)
+
 
     # def get_queryset(self, request):
     #     queryset = super().get_queryset(request)

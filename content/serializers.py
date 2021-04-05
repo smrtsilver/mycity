@@ -182,8 +182,22 @@ class groupserializers(serializers.ModelSerializer):
 class tabsareserializer(serializers.ModelSerializer):
     class Meta:
         model = TariffOptionsModel
-        exclude = ("id","tariff")
+        exclude = ("tariff",)
+class MyChoiceField(serializers.ChoiceField):
+
+    def to_representation(self, data):
+        if data not in self.choices.keys():
+            self.fail('invalid_choice', input=data)
+        else:
+            return self.choices[data]
+
+    def to_internal_value(self, data):
+        for key, value in self.choices.items():
+            if value == data:
+                 return key
+        self.fail('invalid_choice', input=data)
 class tariffserializers(serializers.ModelSerializer):
+    platform=MyChoiceField(choices=tariffModel.pchoices)
     # tabsare = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     tabsare=tabsareserializer(many=True, read_only=True)
     class Meta:
