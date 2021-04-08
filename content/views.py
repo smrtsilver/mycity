@@ -1,4 +1,4 @@
-from sre_parse import SPECIAL_CHARS
+# from sre_parse import SPECIAL_CHARS
 
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework import status
@@ -24,21 +24,28 @@ from django.db.models import Q
 
 from content.utils import modify_input_for_multiple_files
 
+
 class get_tariff(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        query = tariffModel.objects.all().order_by("platform")
+        ser = tariffserializers(query, many=True)
 
+        return Response(ser.data, status=status.HTTP_200_OK)
 
-        query=tariffModel.objects.all().order_by("platform")
-        ser=tariffserializers(query,many=True)
-
-        return Response(ser.data,status=status.HTTP_200_OK)
 
 class get_Special(APIView):
-    def get(self,request):
-        query=base_content.objects.filter(valid__exact=1).filter(Special__exact=True).orderby("-startshowtime")[:10]
-        ser = getcontentserializer(query, many=True)
+    def get(self, request):
+        query = base_content.objects.filter(valid__exact=1).filter(Special__exact=True).order_by("-startshowtime")[:10]
+        ser = contentserializers(query, many=True,context={"request": request})
+        if not ser.data:
+           contenx= { "id": 1,
+            "images": [],
+            "title": "این جا جای شماست!",
+            "description": "با مراجعه به بخش ارتقای آگهی میتوانید این بخش را با خرید بنر رزرو کنید.",
+                    }
+           return Response(contenx,status=status.HTTP_200_OK)
         return Response(ser.data, status=status.HTTP_200_OK)
 
 
@@ -206,15 +213,17 @@ class get_content(APIView):
                 model_filter = Q(title__icontains=search) | Q(description__icontains=search)
 
             if city == 0:
-                query = base_content.objects.filter(Special__exact=False).filter(group_id=group_id).filter(valid__exact=1).filter(
+                query = base_content.objects.filter(Special__exact=False).filter(group_id=group_id).filter(
+                    valid__exact=1).filter(
                     model_filter).order_by(
-                    "create_time")[
+                    "startshowtime")[
                         skip:skip + step]
             elif city in city_id_list:
-                query = base_content.objects.filter.filter(Special__exact=False).filter(group_id=group_id).filter(valid__exact=1).filter(
+                query = base_content.objects.filter(Special__exact=False).filter(group_id=group_id).filter(
+                    valid__exact=1).filter(
                     city_id=city).filter(
                     model_filter).order_by(
-                    "create_time")[
+                    "startshowtime")[
                         skip:skip + step]
             else:
                 context = {"message": "شهر با این آیدی وجود ندارد"}

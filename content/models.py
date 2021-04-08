@@ -181,7 +181,7 @@ class base_content(models.Model):
     group = models.ForeignKey("group", verbose_name="دسته بندی", on_delete=models.PROTECT)
     title = models.CharField(verbose_name="عنوان", max_length=60)
     description = models.TextField(verbose_name="توضیحات")
-    create_time = jmodels.jDateTimeField(auto_now_add=True)
+    create_time = jmodels.jDateTimeField(auto_now_add=True,verbose_name="تاریخ ایجاد ")
 
     update_time = jmodels.jDateTimeField(auto_now=True)
     city = models.ForeignKey("citymodel", verbose_name="شهر", on_delete=models.PROTECT,
@@ -191,30 +191,44 @@ class base_content(models.Model):
     phonenumber = models.CharField(verbose_name="شماره تماس", max_length=12)
     address = models.TextField(verbose_name="آدرس", null=True, blank=True)
     tariff = models.ManyToManyField("tariffModel", verbose_name="تعرفه", blank=True,
-                               related_name="content_tariff")
-    validtime = jmodels.jDateTimeField(verbose_name="تاريخ تاييد", null=True,editable=False)
-    expiretime = jmodels.jDateTimeField(verbose_name="زمان انقضا",blank=True, null=True)
-    startshowtime = jmodels.jDateTimeField(verbose_name="زمان نمایش",blank=True, null=True)
+                                    related_name="content_tariff")
+    tabsare = models.ManyToManyField("TariffOptionsModel", verbose_name="تبصره", blank=True,
+                                    related_name="notes")
+
+    validtime = jmodels.jDateTimeField(verbose_name="تاريخ تاييد", null=True, editable=False)
+    expiretime = jmodels.jDateTimeField(verbose_name="زمان انقضا", blank=True, null=True)
+    startshowtime = jmodels.jDateTimeField(verbose_name="زمان نمایش", blank=True, null=True)
+    banerstartshowtime = jmodels.jDateTimeField(verbose_name="زمان نمایش بنر ", blank=True, null=True)
     valid = models.SmallIntegerField(verbose_name="وضعیت", default=3, choices=valid_choices)
 
-    Special = models.BooleanField(default=False,verbose_name="ویژه")
+    Special = models.BooleanField(default=False, verbose_name="ویژه")
 
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
 
+    @property
+    def expired(self):
+        if self.expiretime:
+            expire = self.expiretime - self.create_time
+            if expire.days < 0:
+                return "منقضی شده"
+            else:
+                return expire.days
+        else:
+            return ""
+
     def update_tarriftime(self):
         if self.tariff.all():
-                lastAPPtariff=self.tariff.filter(platform=1)
-                if lastAPPtariff:
-                    if self.valid==1:
-                        self.startshowtime = jmodels.timezone.now() + lastAPPtariff[0].time
+            lastAPPtariff = self.tariff.filter(platform=1)
+            if lastAPPtariff:
+                if self.valid == 1:
+                    self.startshowtime = jmodels.timezone.now() + lastAPPtariff[0].time
 
-                else:
-                    pass
+            else:
+                pass
 
         else:
             self.tarifftime = None
-
 
     def delete_post(self):
         self.valid = 4
@@ -442,26 +456,26 @@ class group(models.Model):
 
 class tariffModel(models.Model):
     class Meta:
-        verbose_name="تعرفه"
-        verbose_name_plural="تعرفه"
-    pchoices=(
-        (1,"اپلیکیشن"),
-        (2,"تلگرام"),
-        (3,"اینستاگرام"),
-        (4,"بنر در اپلیکیشن")
+        verbose_name = "تعرفه"
+        verbose_name_plural = "تعرفه"
+
+    pchoices = (
+        (1, "اپلیکیشن"),
+        (2, "تلگرام"),
+        (3, "اینستاگرام"),
+        (4, "بنر در اپلیکیشن")
     )
-    platform = models.SmallIntegerField(verbose_name="مربوط به پلتفرم",choices=pchoices)
+    platform = models.SmallIntegerField(verbose_name="مربوط به پلتفرم", choices=pchoices)
     # from jdatetime import datetime
     # from datetime import datetime
-    title=models.CharField(verbose_name="عنوان",max_length=100)
-    description = models.CharField(verbose_name="توضیحات",max_length=100)
-    time=models.DurationField(default=timedelta(days=1,hours=1), help_text="ساعت به صورت "
-                                                                           "hours:minutes:seconds day"
-                                                                            " وارد کنید "
-                                                                           " مانند: "
-                                                                            "6 12:23:00")
+    title = models.CharField(verbose_name="عنوان", max_length=100)
+    description = models.CharField(verbose_name="توضیحات", max_length=100)
+    time = models.DurationField(default=timedelta(days=1, hours=1), help_text="ساعت به صورت "
+                                                                              "hours:minutes:seconds day"
+                                                                              " وارد کنید "
+                                                                              " مانند: "
+                                                                              "6 12:23:00")
     price = models.PositiveIntegerField(verbose_name="قیمت")
-
 
     def __str__(self):
         return "{}".format(self.description)
@@ -476,6 +490,8 @@ class tariffModel(models.Model):
     #     (datetime.datetime.strptime('09:00', "%I:%M").time(), '9:00 pm'),
     #
     # ))
+
+
 # class Product(models.Model):
 #     name = models.CharField(max_length=255)
 #     album = models.OneToOneField(ImageAlbum, related_name='model', on_delete=models.CASCADE)
@@ -490,11 +506,17 @@ class tariffModel(models.Model):
 #     weight = models.FloatField()
 class TariffOptionsModel(models.Model):
     class Meta:
-        verbose_name="تبصره"
-        verbose_name_plural="تبصره"
-    descriptions=models.TextField(verbose_name="توضیحات")
-    price=models.PositiveIntegerField(verbose_name="قیمت")
-    tariff=models.ForeignKey("tariffModel",on_delete=models.CASCADE,verbose_name="مربوط به تعرفه",related_name="tabsare")
+        verbose_name = "تبصره"
+        verbose_name_plural = "تبصره"
+
+    descriptions = models.TextField(verbose_name="توضیحات")
+    price = models.PositiveIntegerField(verbose_name="قیمت")
+    tariff = models.ForeignKey("tariffModel", on_delete=models.CASCADE, verbose_name="مربوط به تعرفه",
+                               related_name="tabsare")
+    def __str__(self):
+        return self.descriptions
+
+
 
 # class BlogPost(models.Model):
 #     name = models.CharField(max_length=255)
@@ -544,31 +566,58 @@ class ImageAlbum(models.Model):
         # instance.ImageAlbum.save()
 
 
-
 def tariffchange(sender, **kwargs):
-    action=kwargs.get("action")
-    if action=="pre_add":
-        pk_changes=kwargs.get("pk_set")
-        instance=kwargs.get("instance")
-        if instance.valid==1:
-            for pk in pk_changes:
-                obj=tariffModel.objects.get(id=pk)
+    action = kwargs.get("action")
+    flagApp = False
+    flagBanner = False
+    delete = []
+    if action == "pre_add":
+        pk_changes = kwargs.get("pk_set")
+        instance = kwargs.get("instance")
+        for pk in pk_changes:
+            obj = tariffModel.objects.get(id=pk)
 
-                if obj.platform==1:
-                    query=instance.tariff.filter(platform=1)
-                    if query.exists():
-                        instance.tariff.remove(*query)
+            if obj.platform == 1:
+                if flagApp:
+                    delete.append(pk)
+                    continue
+                flagApp = True
+                query = instance.tariff.filter(platform=1)
+                if query.exists():
+                    instance.tariff.remove(*query)
+                    instance.save()
+                if instance.valid == 1:
                     instance.startshowtime = jmodels.timezone.now()
                     instance.save()
-                else:
-                    pass
-        else:
-            pass
+
+            if obj.platform == 4:
+                if flagBanner:
+                    delete.append(pk)
+                    continue
+                flagBanner = True
+                query = instance.tariff.filter(platform=4)
+                if query.exists():
+                    instance.tariff.remove(*query)
+                    instance.Special = True
+                    instance.save()
+                if instance.valid == 1:
+                    instance.banerstartshowtime = jmodels.timezone.now()
+                    instance.save()
+            else:
+                pass
+        pk_changes.difference_update(delete)
     else:
         pass
+
+
 m2m_changed.connect(tariffchange, sender=base_content.tariff.through)
 
+
 # Todo complete this part
+#جاهایی که ادمین دستی بتونه تعرفه هارو دستکارو کنه باید پاک بشه در آینده
+
+
+
 @receiver(pre_save, sender=base_content)
 def do_something_if_changed(sender, instance, **kwargs):
     global obj
@@ -579,19 +628,20 @@ def do_something_if_changed(sender, instance, **kwargs):
         if obj.valid != instance.valid and instance.valid == 1:
             instance.expiretime = jmodels.timezone.now() + datetime.timedelta(days=30)
             instance.startshowtime = jmodels.timezone.now()
-            instance.validtime=jmodels.timezone.now()
+            instance.validtime = jmodels.timezone.now()
+            if instance.Special:
+                instance.banerstartshowtime=jmodels.timezone.now()
 
         if instance.valid == 1:
             if obj.Special != instance.Special and instance.Special:
-                instance.startshowtime = jmodels.timezone.now()
+                instance.banerstartshowtime = jmodels.timezone.now()
             else:
-                 pass
+                pass
     else:
 
         if instance.valid == 1:
             instance.expiretime = jmodels.timezone.now() + datetime.timedelta(days=30)
-            instance.startshowtime=jmodels.timezone.now()
+            instance.startshowtime = jmodels.timezone.now()
             instance.validtime = jmodels.timezone.now()
-
-
-
+            if instance.Special:
+                instance.banerstartshowtime = jmodels.timezone.now()

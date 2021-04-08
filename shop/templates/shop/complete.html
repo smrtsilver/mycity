@@ -83,6 +83,7 @@ body {
    <div class="row">
       <div class="col-md-6 mx-auto mt-5">
          <div class="payment">
+             {% if Status == 100 %}
             <div class="payment_header">
                <div class="check"><i class="fa fa-check" aria-hidden="true"></i></div>
             </div>
@@ -93,6 +94,20 @@ body {
             </div>
 
          </div>
+          {% endif %}
+                   {% if Status == 101 %}
+            <div class="payment_header">
+               <div class="check"><i class="fa fa-close" aria-hidden="true"></i></div>
+            </div>
+            <div class="content">
+               <h1>پرداخت موفق</h1>
+               <p>پرداخت شما با شماره پیگیری 999999 به موفقیت ثبت شد</p>
+               <a href="#">برگشت به خانه</a>
+            </div>
+
+         </div>
+          {% endif %}
+
       </div>
    </div>
 </div>

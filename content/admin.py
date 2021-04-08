@@ -9,7 +9,7 @@ from content.models import *
 from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTabularInline
 
 # admin.site.register(base_content)
-# admin.site.register(group)
+admin.site.register(group)
 # admin.site.register(tariff)
 # admin.site.register(city_prob)
 # admin.site.register(Image)
@@ -22,18 +22,21 @@ from nested_admin.nested import NestedModelAdmin, NestedStackedInline, NestedTab
 # def make_published(modeladmin, request, queryset):
 #     queryset.update(status='p')
 # make_published.short_description = "Mark selected stories as published"
-# admin.site.register(citymodel)
+admin.site.register(citymodel)
+
 
 # admin.site.register(platformModel)
 
 class tabsareInline(NestedTabularInline):
-    model= TariffOptionsModel
+    model = TariffOptionsModel
     extra = 1
 
+
 class tariffModelInline(admin.ModelAdmin):
-    model= tariffModel
+    model = tariffModel
     extra = 1
-    inlines = [tabsareInline,]
+    inlines = [tabsareInline, ]
+
 
 class ImageInline(NestedTabularInline):
     model = Image
@@ -81,8 +84,8 @@ class validfilter(admin.SimpleListFilter):
         elif self.value() == "3":
             return queryset.filter(valid__exact=3)
 
-class expiretimefilter(admin.SimpleListFilter):
 
+class expiretimefilter(admin.SimpleListFilter):
     title = ('بر اساس تاريخ انقضا')
 
     parameter_name = 'expire'
@@ -101,19 +104,19 @@ class expiretimefilter(admin.SimpleListFilter):
             return queryset.filter(expiretime__gte=jmodels.timezone.now())
 
 
-
-
-#you need import this for adding jalali calander widget
+# you need import this for adding jalali calander widget
 
 class BarAdmin(admin.ModelAdmin):
     list_filter = (
         ('date', JDateFieldListFilter),
     )
 
+
 class BarTimeAdmin(admin.ModelAdmin):
     list_filter = (
         ('expiretime', JDateFieldListFilter),
     )
+
 
 class basecontentAdmin(NestedModelAdmin):
     # class Media:
@@ -166,7 +169,7 @@ class basecontentAdmin(NestedModelAdmin):
             groups = [g.id for g in request.user.groups.all()]
             if db_field.name == "group":
                 if 1 in groups:
-                # cat = request.user.principal.school
+                    # cat = request.user.principal.school
                     kwargs['queryset'] = group.objects.filter(id__exact=1)
                     # if request.user.groups.filter(id=1).exists():
                 if 2 in groups:
@@ -194,7 +197,6 @@ class basecontentAdmin(NestedModelAdmin):
                 "city",
                 expiretimefilter,
 
-
                 # ('create_time', DateFieldListFilter)
             ]
             self.list_filter.extend([validfilter])
@@ -211,28 +213,29 @@ class basecontentAdmin(NestedModelAdmin):
 
         form.base_fields['tariff'].help_text = "برای انتخاب چند آگهی کلید ctrl را فشار دهید و سپس انتخاب کنید"
 
-
         return form
 
     readonly_fields = [
         'createtime',
-         "timevalid"
+        "timevalid"
     ]
+
     def timevalid(self, obj):
 
-            year = obj.validtime.date().year
-            day = obj.validtime.date().day
-            month = obj.validtime.date().month
-            date= f"{year}/{day}/{month}"
+        year = obj.validtime.date().year
+        day = obj.validtime.date().day
+        month = obj.validtime.date().month
+        date = f"{year}/{day}/{month}"
 
-            hour = obj.validtime.time().hour
-            minute = obj.validtime.time().minute
-            second = obj.validtime.time().second
-            time= f"{hour}:{minute}:{second}"
+        hour = obj.validtime.time().hour
+        minute = obj.validtime.time().minute
+        second = obj.validtime.time().second
+        time = f"{hour}:{minute}:{second}"
 
-            return f"{date}  {time}"
+        return f"{date}  {time}"
 
     timevalid.short_description = "زمان تاييد"
+
     def createtime(self, obj):
         time = obj.get_time()
         date = obj.get_date()
@@ -241,8 +244,9 @@ class basecontentAdmin(NestedModelAdmin):
     createtime.short_description = "زمان ثبت"
 
     def save_model(self, request, obj, form, change):
-        if getattr(obj, 'user', None) is None:
-            obj.author = request.user.userprofile
+        if not request.user.is_superuser:
+            if getattr(obj, 'user', None) is None:
+                obj.author = request.user.userprofile
         obj.save()
 
     def get_queryset(self, request):
@@ -251,7 +255,6 @@ class basecontentAdmin(NestedModelAdmin):
         if request.user.is_superuser:
             return qs.exclude(valid=4)
         return qs.filter(author=request.user.userprofile).exclude(valid=4)
-
 
     # def get_queryset(self, request):
     #     queryset = super().get_queryset(request)
@@ -288,8 +291,8 @@ class basecontentAdmin(NestedModelAdmin):
     # call.admin_order_field = 'call'
 
 
-admin.site.register(base_content,basecontentAdmin)
-admin.site.register(tariffModel,tariffModelInline)
+admin.site.register(base_content, basecontentAdmin)
+admin.site.register(tariffModel, tariffModelInline)
 # class albumInline(admin.TabularInline):
 #     model = ImageAlbum
 # class ImageInline(admin.TabularInline):

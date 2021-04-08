@@ -5,6 +5,55 @@ from accounts.serializers import userserializer, profileserializer
 from content.models import *
 
 
+class tabsareserializer(serializers.ModelSerializer):
+    class Meta:
+        model = TariffOptionsModel
+        exclude = ("tariff",)
+class MyChoiceField(serializers.ChoiceField):
+
+    def to_representation(self, data):
+        if data not in self.choices.keys():
+            self.fail('invalid_choice', input=data)
+        else:
+            return self.choices[data]
+
+    def to_internal_value(self, data):
+        for key, value in self.choices.items():
+            if value == data:
+                 return key
+        self.fail('invalid_choice', input=data)
+class tariffserializers(serializers.ModelSerializer):
+    platform=MyChoiceField(choices=tariffModel.pchoices)
+    # tabsare = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    tabsare=tabsareserializer(many=True, read_only=True)
+    class Meta:
+        model = tariffModel
+        fields = "__all__"
+        depth = 1
+
+    # def to_representation(self,obj):
+    #     rep= super(tariffserializers,self).to_representation(obj)
+    #     rep['events']= [ customer.platform for customer in tariffModel.objects.filter(platform=obj.platform)]
+    #     return rep
+    # def to_representation(self, instance):
+    #     # Result = dict()
+    #     ret = super(tariffModel, self).to_representation(instance)
+    #     profile = ret.pop("profileimage")
+    #     ret.update({"profileiamge": profile["profile_image"]})
+    #     ret.update({"user": profile["fullname"]})
+    #     # TOP=ret.pop("topN")
+    #     #
+    #     # representation = {
+    #     #     'image': self.profileimage.data
+    #     #                  }
+    #
+    #     # Result["result"] = ret
+    #     # Result.update({"TOP": TOP})
+    #     return ret
+    #
+    #     # def get_tax_status_all(self, obj):  # "get_" + field name
+    #     #     return obj.tax_status(check_item_bought=False)
+    #     # todo use this to check if name is None or not
 class ImageSerializer(serializers.ModelSerializer):
     # image = serializers.ListField(child=serializers.ImageField(required=True))
     #
@@ -82,7 +131,8 @@ class contentserializers(serializers.ModelSerializer):
     bookmarked = serializers.SerializerMethodField()
     content_city = serializers.ReadOnlyField()
     status = serializers.ReadOnlyField()
-
+    tariff = tariffserializers(many=True, read_only=True)
+    expire=serializers.SerializerMethodField()
     class Meta:
         model = base_content
         exclude = ("valid", 'create_time', 'update_time')
@@ -97,6 +147,8 @@ class contentserializers(serializers.ModelSerializer):
     #     results = sorted(content.objects.all(), key=lambda m: m.number_of_likes,reverse=True)[:2]
     #     ser = topcontentserializers(results, many=True)
     #     return ser.data
+    def get_expire(self, instance):
+        return instance.expired
 
     def get_bookmarked(self, instance):
         request = self.context.get('request')
@@ -140,6 +192,7 @@ class getcontentserializer(serializers.Serializer):
     skip = serializers.IntegerField(required=True)
     search = serializers.CharField(required=False)
     group = serializers.IntegerField(required=True)
+
     # artist_name = serializers.SerializerMethodField('get_artists_name')
     #
     # def get_artists_name(self, obj):
@@ -179,55 +232,6 @@ class groupserializers(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class tabsareserializer(serializers.ModelSerializer):
-    class Meta:
-        model = TariffOptionsModel
-        exclude = ("tariff",)
-class MyChoiceField(serializers.ChoiceField):
-
-    def to_representation(self, data):
-        if data not in self.choices.keys():
-            self.fail('invalid_choice', input=data)
-        else:
-            return self.choices[data]
-
-    def to_internal_value(self, data):
-        for key, value in self.choices.items():
-            if value == data:
-                 return key
-        self.fail('invalid_choice', input=data)
-class tariffserializers(serializers.ModelSerializer):
-    platform=MyChoiceField(choices=tariffModel.pchoices)
-    # tabsare = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    tabsare=tabsareserializer(many=True, read_only=True)
-    class Meta:
-        model = tariffModel
-        fields = "__all__"
-        depth = 1
-
-    # def to_representation(self,obj):
-    #     rep= super(tariffserializers,self).to_representation(obj)
-    #     rep['events']= [ customer.platform for customer in tariffModel.objects.filter(platform=obj.platform)]
-    #     return rep
-    # def to_representation(self, instance):
-    #     # Result = dict()
-    #     ret = super(tariffModel, self).to_representation(instance)
-    #     profile = ret.pop("profileimage")
-    #     ret.update({"profileiamge": profile["profile_image"]})
-    #     ret.update({"user": profile["fullname"]})
-    #     # TOP=ret.pop("topN")
-    #     #
-    #     # representation = {
-    #     #     'image': self.profileimage.data
-    #     #                  }
-    #
-    #     # Result["result"] = ret
-    #     # Result.update({"TOP": TOP})
-    #     return ret
-    #
-    #     # def get_tax_status_all(self, obj):  # "get_" + field name
-    #     #     return obj.tax_status(check_item_bought=False)
-    #     # todo use this to check if name is None or not
 
 #TODO
 # class cityprobserializers(serializers.ModelSerializer):
