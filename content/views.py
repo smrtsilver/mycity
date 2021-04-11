@@ -37,7 +37,7 @@ class get_tariff(APIView):
 
 class get_Special(APIView):
     def get(self, request):
-        query = base_content.objects.filter(valid__exact=1).filter(Special__exact=True).order_by("-startshowtime")[:10]
+        query = base_content.objects.filter(valid__exact=1).filter(Special__exact=True).order_by("-banerstartshowtime")[:10]
         ser = contentserializers(query, many=True,context={"request": request})
         if not ser.data:
            contenx= { "id": 1,
@@ -75,10 +75,11 @@ class get_group(APIView):
     def post(self, request):
 
         if (request.data.get("group") is None) or int(request.data["group"]) == 0:
-            ser = groupserializers(group.objects.filter(parent=None), many=True)
+            ser = groupserializers(group.objects.filter(status=1).filter(parent=None), many=True)
             a = ser.data
-            a[0], a[1] = a[1], a[0]
-            a[1], a[2] = a[2], a[1]
+            if len(a)>=3:
+                a[0], a[1] = a[1], a[0]
+                a[1], a[2] = a[2], a[1]
             return Response(a, status=status.HTTP_200_OK)
         else:
             group_id = request.data.get("group")

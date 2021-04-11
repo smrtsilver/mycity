@@ -408,7 +408,10 @@ class group(models.Model):
     class Meta:
         verbose_name: "گروه"
         verbose_name_plural = "گروه"
-
+    pchoices=(
+        (1,"فعال"),
+        (2,"غیر فعال"),
+    )
     parent = models.ForeignKey("self", verbose_name="دسته بندی والد", null=True, blank=True, on_delete=models.CASCADE,
                                related_name="child")
     category_title = models.CharField(verbose_name="عنوان دسته بندی", max_length=50, unique=True, blank=False,
@@ -416,7 +419,7 @@ class group(models.Model):
     id = models.AutoField(primary_key=True)
     image = models.ImageField(verbose_name="تصویر دسته بندی", upload_to="category_images")
     slider = models.BooleanField(verbose_name="قابلیت اسلایدر", default=False)
-
+    status=models.SmallIntegerField(verbose_name="وضعیت",default=2,choices=pchoices)
     def __str__(self):
         return ' {} ({})'.format(self.category_title, self.id)
 
@@ -470,7 +473,7 @@ class tariffModel(models.Model):
     # from datetime import datetime
     title = models.CharField(verbose_name="عنوان", max_length=100)
     description = models.CharField(verbose_name="توضیحات", max_length=100)
-    time = models.DurationField(default=timedelta(days=1, hours=1), help_text="ساعت به صورت "
+    time = models.DurationField(verbose_name="زمان تعرفه",default=timedelta(days=1, hours=1), help_text="ساعت به صورت "
                                                                               "hours:minutes:seconds day"
                                                                               " وارد کنید "
                                                                               " مانند: "

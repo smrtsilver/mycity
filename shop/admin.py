@@ -3,11 +3,13 @@ from django.contrib import admin
 # Register your models here.
 from nested_admin.nested import NestedModelAdmin
 
-from shop.models import payment
+from shop.models import paymentModel
 
 
 
 class PaymentAdmin(NestedModelAdmin):
+
+
     # class Media:
     #     css = {
     #         'all': ('/static/admin/css/extracss.css',)
@@ -28,4 +30,10 @@ class PaymentAdmin(NestedModelAdmin):
     list_filter = [
         "status",
     ]
-admin.site.register(payment,PaymentAdmin)
+
+    def has_add_permission(self, request):
+        return False
+    def has_change_permission(self, request, obj=None):
+        return False
+
+admin.site.register(paymentModel,PaymentAdmin)

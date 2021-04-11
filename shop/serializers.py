@@ -1,14 +1,14 @@
 from rest_framework import serializers
 
 from content.models import TariffOptionsModel, tariffModel
-from shop.models import payment
+from shop.models import paymentModel
 
 
 class paymentserializer(serializers.ModelSerializer):
 
 
     class Meta:
-        model = payment
+        model = paymentModel
         exclude = (
             "receipt",
             "userpayment",

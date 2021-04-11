@@ -13,7 +13,7 @@ def compress(image):
     #
     # image = image.resize((w / 2, h / 2), Image.ANTIALIAS)
 
-    im.save(im_io, 'JPEG', quality=35)
+    im.save(im_io, 'JPEG', quality=75)
     # optimize=True REDUCE SIZE AS MUCH AZ POSSIBLE
     new_image = File(im_io, name=image.name)
     return new_image

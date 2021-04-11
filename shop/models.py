@@ -3,7 +3,7 @@ import json
 from django.db import models
 from django_jalali.db import models as jmodels
 # Create your models here.
-class payment(models.Model):
+class paymentModel(models.Model):
     class Meta:
         verbose_name="اطلاعات پرداخت"
         verbose_name_plural="اطلاعات پرداخت"

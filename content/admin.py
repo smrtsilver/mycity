@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.admin import DateFieldListFilter
 from django.db.models import Count
+import django.forms as f
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django_jalali.admin.filters import JDateFieldListFilter
@@ -123,7 +124,7 @@ class basecontentAdmin(NestedModelAdmin):
     #     css = {
     #         'all': ('/static/admin/css/extracss.css',)
     #     }
-    inlines = [albumInlineInline, ]
+    inlines = [albumInlineInline,]
     list_display = ['title', 'valid', "group", "view", "call"]
     exclude = ("author",)
     ordering = ['valid', "-create_time"]
@@ -134,7 +135,38 @@ class basecontentAdmin(NestedModelAdmin):
 
         # ('create_time', DateFieldListFilter)
     ]
+    # list_select_related=("author", "group", "city", "modelAlbum")
+    filter_vertical = ('tariff',"tabsare",)
+    # formfield_overrides = {
+    #     models.ManyToManyField: {'widget': f.},
+    # }
+    readonly_fields = [
+        'createtime',
+        "timevalid"
+    ]
 
+    fieldsets = (
+        (None, {
+            'fields': ("group",
+                       "title",
+                       "description",
+                       "phonenumber",
+                       "city",
+                       "address",
+                       ("valid",
+                       "expiretime"),
+                       'createtime',
+                       "timevalid",
+
+                       ),
+
+        }),
+        ('تعرفه ها', {
+            'classes': ('collapse', 'extrapretty'),
+            'fields': ('tariff',"startshowtime", 'tabsare',"banerstartshowtime"),
+        }),
+    )
+    # raw_id_fields = ("tariff",)
     # actions = ['']
 
     # actions = ["delete_model"]
@@ -210,15 +242,22 @@ class basecontentAdmin(NestedModelAdmin):
         form.base_fields['phonenumber'].initial = request.user.username
         if not is_superuser:
             form.base_fields['phonenumber'].disabled = True
-
+        #
+        # form.base_fields['tariff'].help_text = "برای انتخاب چند آگهی کلید ctrl را فشار دهید و سپس انتخاب کنید"
         form.base_fields['tariff'].help_text = "برای انتخاب چند آگهی کلید ctrl را فشار دهید و سپس انتخاب کنید"
-
+        form.base_fields['tabsare'].help_text = " "
+        # form.base_fields['tariff'].disabled = True
+        # form.base_fields['tariff'].widget.attrs['style'] = 'height: 50px;'
+        # form.base_fields['tabsare'].widget.attrs['style'] = 'height: 50px;'
+        # # form.base_fields['tabsare'].disabled = True
         return form
+    # def formfield_for_manytomany(self, db_field, request, **kwargs):
+    #         form_field = super().formfield_for_manytomany(db_field, request, **kwargs)
+    #         if db_field.name in [*self.filter_horizontal]:
+    #             form_field.widget.attrs = {'size': '5'}
+    #         return form_field
 
-    readonly_fields = [
-        'createtime',
-        "timevalid"
-    ]
+
 
     def timevalid(self, obj):
 
